@@ -155,7 +155,7 @@ public class CVExtractionService {
      * @return Map contenant 3 listes + niveau d'étude : compétences, expériences, formations, niveauEtude
      * @throws RuntimeException Si l'appel au service Python échoue
      */
-    public Map<String, List<Map<String, Object>>> extractEntitiesWithAI(String cvText) {
+    public Map<String, Object> extractEntitiesWithAI(String cvText) {
         try {
             // ============================================================
             // PRÉPARATION DE LA REQUÊTE HTTP
@@ -186,7 +186,9 @@ public class CVExtractionService {
             // ============================================================
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 // Cast du corps de la réponse vers le type attendu
-                return (Map<String, List<Map<String, Object>>>) response.getBody();
+                @SuppressWarnings("unchecked")
+                Map<String, Object> result = (Map<String, Object>) response.getBody();
+                return result;
             } else {
                 throw new RuntimeException("Erreur lors de l'appel au service Python: " + response.getStatusCode());
             }
@@ -213,6 +215,7 @@ public class CVExtractionService {
      *         - "competences": List<Map> (liste des compétences extraites)
      *         - "experiences": List<Map> (liste des expériences extraites)
      *         - "formations": List<Map> (liste des formations extraites)
+     *         - "niveauEtude": String (niveau d'étude extrait)
      * @throws IOException Si le fichier ne peut pas être lu
      */
     public Map<String, Object> extractCVInformation(String filePath) throws IOException {
@@ -220,14 +223,15 @@ public class CVExtractionService {
         String text = extractTextFromFile(filePath);
         
         // Étape 2 : Appel au service Python pour l'extraction d'entités
-        Map<String, List<Map<String, Object>>> entities = extractEntitiesWithAI(text);
+        Map<String, Object> entities = extractEntitiesWithAI(text);
         
         // Étape 3 : Retour du texte et des entités dans une map structurée
         return Map.of(
             "texteBrut", text,
             "competences", entities.getOrDefault("competences", List.of()),  // Liste vide si pas de compétences
             "experiences", entities.getOrDefault("experiences", List.of()),  // Liste vide si pas d'expériences
-            "formations", entities.getOrDefault("formations", List.of())  // Liste vide si pas de formations
+            "formations", entities.getOrDefault("formations", List.of()),  // Liste vide si pas de formations
+            "niveauEtude", entities.getOrDefault("niveauEtude", "SANS_EXIGENCE")  // Niveau d'étude
         );
     }
 }

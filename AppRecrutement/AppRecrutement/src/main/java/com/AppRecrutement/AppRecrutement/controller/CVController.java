@@ -176,7 +176,7 @@ public class CVController {
                 String texteBrut = cvExtractionService.extractTextFromFile(filePath.toString());
 
                 // Appeler le service Python pour l'extraction IA des entités
-                Map<String, List<Map<String, Object>>> entities = cvExtractionService.extractEntitiesWithAI(texteBrut);
+                Map<String, Object> entities = cvExtractionService.extractEntitiesWithAI(texteBrut);
                 
                 // Log des entités extraites (pour vérification)
                 System.out.println("Entités extraites du CV:");
@@ -217,7 +217,8 @@ public class CVController {
                 }
 
                 // Sauvegarde des compétences extraites
-                List<Map<String, Object>> competences = entities.getOrDefault("competences", List.of());
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> competences = (List<Map<String, Object>>) entities.getOrDefault("competences", List.of());
                 for (Map<String, Object> competence : competences) {
                     String nom = (String) competence.get("text");
                     // Vérifier si la compétence existe déjà
@@ -244,7 +245,8 @@ public class CVController {
                 // Supprimer les anciennes expériences du candidat
                 experienceRepository.deleteByCandidat(candidat);
                 
-                List<Map<String, Object>> experiences = entities.getOrDefault("experiences", List.of());
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> experiences = (List<Map<String, Object>>) entities.getOrDefault("experiences", List.of());
                 for (Map<String, Object> experience : experiences) {
                     String titrePoste = (String) experience.get("titrePoste");
                     String entreprise = (String) experience.get("entreprise");
@@ -285,7 +287,8 @@ public class CVController {
                 // Supprimer les anciennes formations du candidat
                 formationRepository.deleteByCandidat(candidat);
                 
-                List<Map<String, Object>> formations = entities.getOrDefault("formations", List.of());
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> formations = (List<Map<String, Object>>) entities.getOrDefault("formations", List.of());
                 for (Map<String, Object> formation : formations) {
                     String diplome = (String) formation.get("diplome");
                     String etablissement = (String) formation.get("etablissement");

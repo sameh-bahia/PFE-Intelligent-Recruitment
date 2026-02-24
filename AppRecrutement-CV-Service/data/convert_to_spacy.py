@@ -2,7 +2,8 @@
 # FICHIER : convert_to_spacy.py
 # DESCRIPTION : Script pour convertir le JSON de données d'entraînement au format spaCy
 # LOCALISATION : D:\PFE\AppRecrutement-CV-Service\data\convert_to_spacy.py
-# FONCTION : Lit training_data.json et le convertit au format spaCy pour l'entraînement
+# FONCTION : Lit training_data.json et le convertit au format spaCy pour l'entraînement +Sauvegarde le résultat dans training_data_spacy.py
+# aamlna lexecution mteeou par : python data/convert_to_spacy.py
 # ============================================================
 
 import json  # Pour lire le fichier JSON

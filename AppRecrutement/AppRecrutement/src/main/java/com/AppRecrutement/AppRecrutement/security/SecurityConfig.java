@@ -70,7 +70,7 @@ public class SecurityConfig {
 
         return http.build();
     }
-
+    // Configuration CORS :Autoriser le frontend React à appeler le backend.
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -88,7 +88,7 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-
+//Rôle : Hacher les mots de passe avant de les stocker
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

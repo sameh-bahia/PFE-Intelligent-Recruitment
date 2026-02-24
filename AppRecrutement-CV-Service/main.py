@@ -56,6 +56,7 @@ class CVResponse(BaseModel):
     competences: List[Dict]  # Liste des compétences extraites
     experiences: List[Dict]  # Liste des expériences extraites
     formations: List[Dict]  # Liste des formations extraites
+    niveauEtude: str  # Niveau d'étude extrait (INGENIEUR, MASTER, LICENCE, etc.)
 
 # ============================================================
 # VARIABLE GLOBALE POUR LE MODÈLE spaCy
@@ -109,12 +110,14 @@ async def extract_cv(request: CVRequest):
         competences = entities.get("competences", [])  # Compétences techniques
         experiences = entities.get("experiences", [])  # Expériences professionnelles
         formations = entities.get("formations", [])  # Formations et diplômes
+        niveau_etude = entities.get("niveauEtude", "SANS_EXIGENCE")  # Niveau d'étude
         
         # Retour de la réponse structurée
         return CVResponse(
             competences=competences,
             experiences=experiences,
-            formations=formations
+            formations=formations,
+            niveauEtude=niveau_etude
         )
     except Exception as e:
         # En cas d'erreur lors de l'extraction, on retourne une erreur 500
