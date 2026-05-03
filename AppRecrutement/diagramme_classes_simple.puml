@@ -1,0 +1,213 @@
+@startuml Diagramme de Classes - AppRecrutement
+
+title Plateforme de Recrutement Intelligente
+
+' --- Énumérations ---
+enum Role {
+    CANDIDAT
+    RECRUTEUR
+    ADMIN
+}
+
+enum StatutAnalyse {
+    EN_ATTENTE
+    EN_COURS
+    TERMINE
+    ERREUR
+}
+
+enum StatutCandidature {
+    EN_ATTENTE
+    ACCEPTEE
+    REFUSEE
+}
+
+enum StatutOffre {
+    OUVERTE
+    CLOTUREE
+    ARCHIVEE
+}
+
+enum TypeContrat {
+    CDI
+    CDD
+    STAGE
+    FREELANCE
+    ALTERNANCE
+    SIVP
+}
+
+enum TypeRecommandation {
+    FORMATION
+    CERTIFICATION
+    COMPETENCE_MANQUANTE
+}
+
+' --- Classes ---
+
+class Utilisateur {
+    - id: Long
+    - email: String
+    - motDePasse: String
+    - nom: String
+    - prenom: String
+    - role: Role
+    - dateInscription: Date
+    + onCreate()
+}
+
+class Candidat {
+    - id: Long
+    - email: String
+    - motDePasse: String
+    - nom: String
+    - prenom: String
+    - role: Role
+    - dateInscription: Date
+    - telephone: String
+    - adresse: String
+    - dateNaissance: Date
+    - titreProfil: String
+    + telechargerCV()
+    + consulterOffres()
+    + postuler()
+}
+
+class Recruteur {
+    - id: Long
+    - email: String
+    - motDePasse: String
+    - nom: String
+    - prenom: String
+    - role: Role
+    - dateInscription: Date
+    - nomEntreprise: String
+    - poste: String
+    + publierOffre()
+    + consulterCandidatures()
+}
+
+class CV {
+    - id: Long
+    - cheminFichier: String
+    - dateTelechargement: Date
+    - estPrincipal: Boolean
+    - contenuTexte: String
+    - statutAnalyse: StatutAnalyse
+}
+
+class ResultatAnalyse {
+    - id: Long
+    - dateAnalyse: Date
+    - tempsExecution: Double
+    - precisionScore: Double
+}
+
+class Competence {
+    - id: Long
+    - nom: String
+    - categorie: String
+    - niveauRequis: Integer
+}
+
+class Formation {
+    - id: Long
+    - diplome: String
+    - etablissement: String
+    - anneeObtention: Integer
+    - specialite: String
+}
+
+class Experience {
+    - id: Long
+    - titrePoste: String
+    - entreprise: String
+    - dateDebut: Date
+    - dateFin: Date
+    - description: String
+}
+
+class Offre {
+    - id: Long
+    - titre: String
+    - description: String
+    - lieu: String
+    - typeContrat: TypeContrat
+    - statutOffre: StatutOffre
+    - datePublication: Date
+    - dateExpiration: Date
+    - salaireMin: Double
+    - salaireMax: Double
+}
+
+class Scoring {
+    - id: Long
+    - poidsCompetences: Double
+    - poidsExperiences: Double
+    - poidsFormations: Double
+}
+
+class Candidature {
+    - id: Long
+    - dateCandidature: Date
+    - scoreCompatibilite: Double
+    - lettreMotivation: String
+    - statut: StatutCandidature
+    + onCreate()
+}
+
+class RapportScoring {
+    - id: Long
+    - scoreFinal: Double
+    - pointsForts: List<String>
+    - pointsFaibles: List<String>
+}
+
+class Recommandation {
+    - id: Long
+    - titre: String
+    - type: TypeRecommandation
+    - message: String
+}
+
+' --- Relations ---
+
+Utilisateur <|-- Candidat
+Utilisateur <|-- Recruteur
+
+Candidat "1" --> "*" CV : possède
+Candidat "1" --> "*" Formation : a
+Candidat "1" --> "*" Experience : a
+Candidat "1" --> "*" Candidature : effectue
+Candidat "1" --> "*" Recommandation : reçoit
+
+Recruteur "1" --> "*" Offre : publie
+
+CV "1" --> "1" ResultatAnalyse : génère
+ResultatAnalyse "1" --> "*" Competence : identifie
+CV "1" --> "0..1" ResultatAnalyse
+
+Offre "1" --> "*" Competence : requiert
+Offre "1" --> "*" Candidature : reçoit
+Offre "1" --> "*" Scoring : utilise
+
+Candidature "1" --> "1" RapportScoring : génère
+Candidature "*" --> "1" Candidat : appartient à
+Candidature "*" --> "1" Offre : concerne
+
+Scoring "*" --> "1" Offre : configuré pour
+
+Competence "*" --> "*" Offre : requise pour
+
+CV "0..1" --> "0..1" ResultatAnalyse
+ResultatAnalyse "1" --> "0..1" CV
+
+Competence "0..1" --> "0..1" ResultatAnalyse
+ResultatAnalyse "1" --> "*" Competence
+
+Formation "*" --> "1" Candidat
+Experience "*" --> "1" Candidat
+
+Recommandation "*" --> "1" Candidat
+
+@enduml
