@@ -7,6 +7,12 @@ import DashboardRecruteur from './pages/DashboardRecruteur';
 import ListeOffres from './pages/offres/ListeOffres';
 import CreerOffre from './pages/offres/CreerOffre';
 import ModifierOffre from './pages/offres/ModifierOffre';
+import CandidaturesRecues from './pages/offres/CandidaturesRecues';
+import VoirOffres from './pages/candidatures/VoirOffres';
+import PostulerOffre from './pages/candidatures/PostulerOffre';
+import ListeCandidatures from './pages/candidatures/ListeCandidatures';
+import MonProfilCandidat from './pages/profil/MonProfilCandidat';
+import MonProfilRecruteur from './pages/profil/MonProfilRecruteur';
 
 function App() {
   return (
@@ -21,6 +27,12 @@ function App() {
         <Route path="/dashboard/recruteur/offres" element={<ListeOffres />} />
         <Route path="/dashboard/recruteur/offres/creer" element={<CreerOffre />} />
         <Route path="/dashboard/recruteur/offres/modifier/:id" element={<ModifierOffre />} />
+        <Route path="/dashboard/recruteur/candidatures" element={<CandidaturesRecues />} />
+        <Route path="/dashboard/recruteur/profil" element={<MonProfilRecruteur />} />
+        <Route path="/dashboard/candidat/offres" element={<VoirOffres />} />
+        <Route path="/dashboard/candidat/offres/:id/postuler" element={<PostulerOffre />} />
+        <Route path="/dashboard/candidat/candidatures" element={<ListeCandidatures />} />
+        <Route path="/dashboard/candidat/profil" element={<MonProfilCandidat />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,5 +1,6 @@
 package com.AppRecrutement.AppRecrutement.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.Date;
 
@@ -18,9 +19,12 @@ public class Experience {
 
     @ManyToOne
     @JoinColumn(name = "candidat_id")
+    @JsonIgnore
     private Candidat candidat;
 
     public Experience() {
+        this.dateDebut = null;
+        this.dateFin = null;
     }
 
     public Experience(String titrePoste, String entreprise, Date dateDebut, Date dateFin, String description) {

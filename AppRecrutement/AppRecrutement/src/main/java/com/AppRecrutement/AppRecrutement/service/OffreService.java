@@ -30,4 +30,10 @@ public class OffreService {
         offreRepository.deleteById(id);
     }
 
+    // Méthode ajoutée pour récupérer les offres d'un recruteur spécifique
+    // Utilisée pour que chaque recruteur ne voit que ses propres offres
+    public List<Offre> findByRecruteurId(Long recruteurId) {
+        return offreRepository.findByRecruteurId(recruteurId);
+    }
+
 }

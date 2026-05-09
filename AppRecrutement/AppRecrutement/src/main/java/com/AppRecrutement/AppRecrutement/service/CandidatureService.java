@@ -30,4 +30,14 @@ public class CandidatureService {
         candidatureRepository.deleteById(id);
     }
 
+    public List<Candidature> findByCandidatId(Long candidatId) {
+        return candidatureRepository.findByCandidatId(candidatId);
+    }
+
+    // Méthode ajoutée pour récupérer les candidatures reçues par un recruteur spécifique
+    // Utilisée pour que chaque recruteur ne voit que les candidatures de ses propres offres
+    public List<Candidature> findByRecruteurId(Long recruteurId) {
+        return candidatureRepository.findByRecruteurId(recruteurId);
+    }
+
 }

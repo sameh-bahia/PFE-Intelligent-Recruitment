@@ -2,6 +2,7 @@ package com.AppRecrutement.AppRecrutement.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -37,6 +38,31 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/candidats/**", "/api/recruteurs/**").permitAll()
+                        // GET /api/offres: Public (les candidats peuvent voir les offres)
+                        // POST/PUT/DELETE /api/offres: Auth requis (seuls les recruteurs peuvent créer/modifier/supprimer)
+                        .requestMatchers(HttpMethod.GET, "/api/offres/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/offres/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/offres/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/offres/**").authenticated()
+                        // GET /api/candidatures: Public pour voir les candidatures (si nécessaire)
+                        // POST /api/candidatures: Auth requis pour créer une candidature
+                        // PUT /api/candidatures: Auth requis pour mettre à jour le statut
+                        .requestMatchers(HttpMethod.GET, "/api/candidatures/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/candidatures/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/candidatures/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/candidatures/**").authenticated()
+                        // POST /api/cvs/upload: Auth requis pour uploader un CV
+                        // GET /api/cvs/mon-cv: Auth requis pour voir son CV
+                        // GET /api/cvs/download/**: Auth requis pour télécharger/voir un CV
+                        // DELETE /api/cvs/mon-cv: Auth requis pour supprimer son CV
+                        .requestMatchers(HttpMethod.POST, "/api/cvs/upload").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/cvs/mon-cv").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/cvs/download/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/cvs/mon-cv").authenticated()
+                        // GET /api/candidats/mon-profil: Auth requis pour voir son profil
+                        // GET /api/recruteurs/mon-profil: Auth requis pour voir son profil
+                        .requestMatchers(HttpMethod.GET, "/api/candidats/mon-profil").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/recruteurs/mon-profil").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -1,0 +1,23 @@
+# ============================================================
+# FICHIER : requirements.txt
+# DESCRIPTION : Dépendances Python pour le service d'extraction de CV avec IA
+# LOCALISATION : D:\PFE\AppRecrutement-CV-Service\requirements.txt
+# ============================================================
+
+# FastAPI : Framework web moderne et rapide pour créer des APIs en Python
+# Utilisé pour créer les endpoints REST (POST /extract) qui recevront le texte des CVs
+fastapi
+
+# Uvicorn : Serveur ASGI pour exécuter les applications FastAPI
+# Permet de démarrer le serveur HTTP (par défaut sur le port 8000)
+uvicorn
+
+# spaCy : Bibliothèque NLP (Natural Language Processing) avancée
+# Utilisée pour l'extraction d'entités nommées (NER) depuis le texte des CVs
+# Permet de reconnaître automatiquement : compétences, expériences, formations
+spacy
+
+# Requests : Bibliothèque HTTP pour Python
+# Utilisée côté client (optionnel) pour tester les endpoints du service
+# Non obligatoire pour le fonctionnement du service FastAPI
+requests

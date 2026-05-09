@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Contrôleur REST pour gérer les offres d'emploi.
+ * Fournit les endpoints CRUD pour les offres et un endpoint pour récupérer les offres du recruteur connecté.
+ */
 @RestController
 @RequestMapping("/api/offres")
 public class OffreController {
@@ -21,11 +25,33 @@ public class OffreController {
     @Autowired
     private RecruteurRepository recruteurRepository;
 
+    /**
+     * Récupère toutes les offres d'emploi.
+     * @return Liste de toutes les offres
+     */
     @GetMapping
     public List<Offre> getAllOffres() {
         return offreService.findAll();
     }
 
+    /**
+     * Récupère les offres du recruteur connecté.
+     * Utilise l'Authentication pour obtenir l'email du recruteur via le token JWT.
+     * @param authentication Authentification JWT du recruteur connecté
+     * @return Liste des offres du recruteur
+     */
+    @GetMapping("/mes-offres")
+    public List<Offre> getMesOffres(Authentication authentication) {
+        String email = authentication.getName();
+        Recruteur recruteur = recruteurRepository.findByEmail(email);
+        return offreService.findByRecruteurId(recruteur.getId());
+    }
+
+    /**
+     * Récupère une offre par son ID.
+     * @param id Identifiant de l'offre
+     * @return Offre trouvée ou 404 si non trouvée
+     */
     @GetMapping("/{id}")
     public ResponseEntity<Offre> getOffreById(@PathVariable Long id) {
         return offreService.findById(id)
@@ -33,6 +59,13 @@ public class OffreController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Crée une nouvelle offre d'emploi.
+     * L'offre est automatiquement associée au recruteur connecté.
+     * @param offre Offre à créer
+     * @param authentication Authentification JWT du recruteur connecté
+     * @return Offre créée
+     */
     @PostMapping
     public Offre createOffre(@RequestBody Offre offre, Authentication authentication) {
         String email = authentication.getName();
@@ -44,6 +77,12 @@ public class OffreController {
         return offreService.save(offre);
     }
 
+    /**
+     * Met à jour une offre existante.
+     * @param id Identifiant de l'offre à mettre à jour
+     * @param offre Nouvelles données de l'offre
+     * @return Offre mise à jour ou 404 si non trouvée
+     */
     @PutMapping("/{id}")
     public ResponseEntity<Offre> updateOffre(@PathVariable Long id, @RequestBody Offre offre) {
         if (offreService.findById(id).isPresent()) {
@@ -53,6 +92,11 @@ public class OffreController {
         return ResponseEntity.notFound().build();
     }
 
+    /**
+     * Supprime une offre par son ID.
+     * @param id Identifiant de l'offre à supprimer
+     * @return 204 si supprimée, 404 si non trouvée
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteOffre(@PathVariable Long id) {
         if (offreService.findById(id).isPresent()) {

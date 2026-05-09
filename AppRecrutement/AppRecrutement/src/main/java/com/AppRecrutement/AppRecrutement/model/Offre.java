@@ -11,13 +11,16 @@ public class Offre {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    // Titre limité à 200 caractères (suffisant pour un titre d'offre)
+    @Column(nullable = false, length = 200)
     private String titre;
 
-    @Column(nullable = false)
+    // Description en TEXT pour permettre des descriptions longues
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false)
+    // Lieu limité à 200 caractères (ex: "Paris, France" ou "Remote")
+    @Column(nullable = false, length = 200)
     private String lieu;
 
     @Enumerated(EnumType.STRING)
@@ -27,6 +30,9 @@ public class Offre {
     @Column(nullable = false)
     private Boolean estOuverte;
 
+    // Salaire limité à 100 caractères (ex: "3000€ - 4500€")
+    @Column(length = 100)
+    private String salaire;
     private Double salaireMin;
     private Double salaireMax;
 
@@ -106,6 +112,14 @@ public class Offre {
 
     public void setEstOuverte(Boolean estOuverte) {
         this.estOuverte = estOuverte;
+    }
+
+    public String getSalaire() {
+        return salaire;
+    }
+
+    public void setSalaire(String salaire) {
+        this.salaire = salaire;
     }
 
     public Double getSalaireMin() {

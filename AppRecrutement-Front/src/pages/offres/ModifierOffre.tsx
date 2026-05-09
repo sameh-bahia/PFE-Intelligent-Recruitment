@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
+import { Briefcase, ArrowLeft, Save } from 'lucide-react';
 import api from '@/lib/api';
+import MainLayout from '@/components/layout/MainLayout';
 
 export default function ModifierOffre() {
   const { id } = useParams<{ id: string }>();
@@ -58,136 +60,146 @@ export default function ModifierOffre() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-600">Chargement...</div>
-      </div>
+      <MainLayout role="RECRUTEUR" userName="Recruteur">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-600">Chargement...</div>
+        </div>
+      </MainLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-6">
-          <Link
-            to="/dashboard/recruteur/offres"
-            className="text-indigo-600 hover:text-indigo-500"
-          >
-            ← Retour aux offres
-          </Link>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">
-            Modifier l'offre
-          </h1>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="titre" className="block text-sm font-medium text-gray-700">
-                Titre de l'offre
-              </label>
-              <input
-                id="titre"
-                name="titre"
-                type="text"
-                required
-                value={formData.titre}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                Description
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                required
-                rows={6}
-                value={formData.description}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="typeContrat" className="block text-sm font-medium text-gray-700">
-                Type de contrat
-              </label>
-              <select
-                id="typeContrat"
-                name="typeContrat"
-                required
-                value={formData.typeContrat}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                <option value="">Sélectionner...</option>
-                <option value="CDI">CDI</option>
-                <option value="CDD">CDD</option>
-                <option value="Stage">Stage</option>
-                <option value="Freelance">Freelance</option>
-                <option value="Alternance">Alternance</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="salaire" className="block text-sm font-medium text-gray-700">
-                Salaire
-              </label>
-              <input
-                id="salaire"
-                name="salaire"
-                type="text"
-                required
-                placeholder="Ex: 3000€ - 4000€"
-                value={formData.salaire}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="lieu" className="block text-sm font-medium text-gray-700">
-                Lieu
-              </label>
-              <input
-                id="lieu"
-                name="lieu"
-                type="text"
-                required
-                placeholder="Ex: Paris, Tunis, Remote"
-                value={formData.lieu}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="flex justify-end space-x-4">
-              <Link
-                to="/dashboard/recruteur/offres"
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-              >
-                Annuler
-              </Link>
-              <button
-                type="submit"
-                className="px-4 py-2 border border-transparent rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                Modifier l'offre
-              </button>
-            </div>
-          </form>
-        </div>
+    <MainLayout role="RECRUTEUR" userName="Recruteur">
+      <div className="mb-8">
+        <Link
+          to="/dashboard/recruteur/offres"
+          className="text-[#3B82F6] hover:text-[#2563EB] font-medium inline-flex items-center gap-2"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          Retour aux offres
+        </Link>
       </div>
-    </div>
+
+      <div className="bg-white rounded-2xl shadow-sm p-8 border border-[#E2E8F0]">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="p-4 bg-[#3B82F6]/10 rounded-xl">
+            <Briefcase className="w-8 h-8 text-[#3B82F6]" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-[#1E293B]">Modifier l'offre</h1>
+            <p className="text-gray-600 mt-1">Mettez à jour les informations de votre offre</p>
+          </div>
+        </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div>
+            <label htmlFor="titre" className="block text-lg font-semibold text-[#1E293B] mb-3">
+              Titre de l'offre
+            </label>
+            <input
+              id="titre"
+              name="titre"
+              type="text"
+              required
+              value={formData.titre}
+              onChange={handleChange}
+              className="w-full px-5 py-4 h-14 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
+              placeholder="Ex: Développeur Full Stack Senior"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="description" className="block text-lg font-semibold text-[#1E293B] mb-3">
+              Description
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              required
+              rows={6}
+              value={formData.description}
+              onChange={handleChange}
+              className="w-full px-5 py-4 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
+              placeholder="Décrivez le poste, les responsabilités et les compétences requises..."
+            />
+          </div>
+
+          <div>
+            <label htmlFor="typeContrat" className="block text-lg font-semibold text-[#1E293B] mb-3">
+              Type de contrat
+            </label>
+            <select
+              id="typeContrat"
+              name="typeContrat"
+              required
+              value={formData.typeContrat}
+              onChange={handleChange}
+              className="w-full px-5 py-4 h-14 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
+            >
+              <option value="">Sélectionner...</option>
+              <option value="CDI">CDI</option>
+              <option value="CDD">CDD</option>
+              <option value="Stage">Stage</option>
+              <option value="Freelance">Freelance</option>
+              <option value="Alternance">Alternance</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="salaire" className="block text-lg font-semibold text-[#1E293B] mb-3">
+              Salaire
+            </label>
+            <input
+              id="salaire"
+              name="salaire"
+              type="text"
+              required
+              placeholder="Ex: 3000€ - 4000€"
+              value={formData.salaire}
+              onChange={handleChange}
+              className="w-full px-5 py-4 h-14 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="lieu" className="block text-lg font-semibold text-[#1E293B] mb-3">
+              Lieu
+            </label>
+            <input
+              id="lieu"
+              name="lieu"
+              type="text"
+              required
+              placeholder="Ex: Paris, Tunis, Remote"
+              value={formData.lieu}
+              onChange={handleChange}
+              className="w-full px-5 py-4 h-14 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
+            />
+          </div>
+
+          <div className="flex justify-end gap-4 pt-6">
+            <Link
+              to="/dashboard/recruteur/offres"
+              className="px-6 py-3 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+            >
+              Annuler
+            </Link>
+            <button
+              type="submit"
+              className="px-6 py-3 h-14 bg-[#3B82F6] text-white rounded-xl hover:bg-[#2563EB] transition-colors font-bold text-lg flex items-center gap-2"
+            >
+              <Save className="w-5 h-5" />
+              Modifier l'offre
+            </button>
+          </div>
+        </form>
+      </div>
+    </MainLayout>
   );
 }

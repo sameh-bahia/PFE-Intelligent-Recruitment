@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Briefcase, Users, TrendingUp, Edit, Trash2, Plus } from 'lucide-react';
 import api from '@/lib/api';
+import MainLayout from '@/components/layout/MainLayout';
 
 interface Offre {
   id: number;
@@ -10,6 +12,8 @@ interface Offre {
   salaire: string;
   lieu: string;
   datePublication: string;
+  statut?: string;
+  candidats?: number;
 }
 
 export default function ListeOffres() {
@@ -21,9 +25,13 @@ export default function ListeOffres() {
     fetchOffres();
   }, []);
 
+  // Changement: Remplacement de '/offres' par '/offres/mes-offres'
+  // Pourquoi: Avant, l'API retournait TOUTES les offres de la BD
+  // Maintenant, l'endpoint filtre par recruteur connecté via token JWT
+  // Résultat: Chaque recruteur ne voit que ses propres offres
   const fetchOffres = async () => {
     try {
-      const response = await api.get('/offres');
+      const response = await api.get('/offres/mes-offres');
       setOffres(response.data);
       setLoading(false);
     } catch (err) {
@@ -47,109 +55,194 @@ export default function ListeOffres() {
     }
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Date invalide';
+    return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  };
+
+  const getStatutBadge = (statut?: string) => {
+    const status = statut || 'Active';
+    if (status === 'Active') {
+      return (
+        <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          Active
+        </span>
+      );
+    } else {
+      return (
+        <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+          Expirée
+        </span>
+      );
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-600">Chargement...</div>
-      </div>
+      <MainLayout role="RECRUTEUR" userName="Recruteur">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-600">Chargement...</div>
+        </div>
+      </MainLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Mes Offres</h1>
-          <Link
-            to="/dashboard/recruteur/offres/creer"
-            className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
-          >
-            + Créer une offre
-          </Link>
+    <MainLayout role="RECRUTEUR" userName="Recruteur">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-[#1E293B]">Mes Offres</h1>
+        <p className="text-gray-600 mt-2">Gérez vos offres d'emploi</p>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-[#E2E8F0]">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Total Offres</p>
+              <p className="text-3xl font-bold text-[#1E293B] mt-2">{offres.length}</p>
+            </div>
+            <div className="p-3 bg-[#3B82F6]/10 rounded-xl">
+              <Briefcase className="w-8 h-8 text-[#3B82F6]" />
+            </div>
+          </div>
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-[#E2E8F0]">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Candidats</p>
+              <p className="text-3xl font-bold text-[#1E293B] mt-2">
+                {offres.reduce((sum, offre) => sum + (offre.candidats || 0), 0)}
+              </p>
+            </div>
+            <div className="p-3 bg-[#10B981]/10 rounded-xl">
+              <Users className="w-8 h-8 text-[#10B981]" />
+            </div>
           </div>
-        )}
+        </div>
 
-        {offres.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
-            <p className="text-gray-600">Aucune offre pour le moment.</p>
-            <Link
-              to="/dashboard/recruteur/offres/creer"
-              className="text-indigo-600 hover:text-indigo-500 mt-4 inline-block"
-            >
-              Créer votre première offre
-            </Link>
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-[#E2E8F0]">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Matchs récents</p>
+              <p className="text-3xl font-bold text-[#1E293B] mt-2">12</p>
+            </div>
+            <div className="p-3 bg-[#F59E0B]/10 rounded-xl">
+              <TrendingUp className="w-8 h-8 text-[#F59E0B]" />
+            </div>
           </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Titre
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Type de contrat
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Salaire
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Lieu
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date de publication
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {offres.map((offre) => (
-                  <tr key={offre.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {offre.titre}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {offre.typeContrat}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {offre.salaire}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {offre.lieu}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(offre.datePublication).toLocaleDateString('fr-FR')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
-                        <Link
-                          to={`/dashboard/recruteur/offres/modifier/${offre.id}`}
-                          className="text-indigo-600 hover:text-indigo-900"
-                        >
-                          Modifier
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(offre.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Supprimer
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        </div>
       </div>
-    </div>
+
+      <div className="flex justify-between items-center mb-6">
+        <div></div>
+        <Link
+          to="/dashboard/recruteur/offres/creer"
+          className="bg-[#3B82F6] text-white px-4 py-2 rounded-lg hover:bg-[#2563EB] transition-colors flex items-center gap-2"
+        >
+          <Plus className="w-5 h-5" />
+          Créer une offre
+        </Link>
+      </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6">
+          {error}
+        </div>
+      )}
+
+      {offres.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-[#E2E8F0]">
+          <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <p className="text-gray-600 mb-4">Aucune offre pour le moment.</p>
+          <Link
+            to="/dashboard/recruteur/offres/creer"
+            className="text-[#3B82F6] hover:text-[#2563EB] font-medium"
+          >
+            Créer votre première offre
+          </Link>
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-[#E2E8F0]">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Titre
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Type de contrat
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Salaire
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Lieu
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Statut
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Candidats
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Date de publication
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {offres.map((offre) => (
+                <tr key={offre.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#1E293B]">
+                    {offre.titre}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {offre.typeContrat}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {offre.salaire}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {offre.lieu}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {getStatutBadge(offre.statut)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {offre.candidats || 0}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {formatDate(offre.datePublication)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex space-x-3">
+                      <Link
+                        to={`/dashboard/recruteur/offres/modifier/${offre.id}`}
+                        className="text-[#3B82F6] hover:text-[#2563EB] transition-colors"
+                        title="Modifier"
+                      >
+                        <Edit className="w-5 h-5" />
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(offre.id)}
+                        className="text-red-600 hover:text-red-700 transition-colors"
+                        title="Supprimer"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </MainLayout>
   );
 }

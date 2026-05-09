@@ -1,109 +1,90 @@
 import { Link } from 'react-router-dom';
+import { Briefcase, Users, Plus, User, ArrowRight } from 'lucide-react';
+import MainLayout from '@/components/layout/MainLayout';
 
 export default function DashboardRecruteur() {
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    window.location.href = '/login';
-  };
+  const userName = localStorage.getItem('userName') || 'Recruteur';
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex">
-              <div className="flex-shrink-0 flex items-center">
-                <h1 className="text-2xl font-bold text-gray-900">AppRecrutement</h1>
-              </div>
-            </div>
-            <div className="flex items-center">
-              <button
-                onClick={handleLogout}
-                className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Déconnexion
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">Tableau de bord Recruteur</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Link
-              to="/dashboard/recruteur/offres"
-              className="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow cursor-pointer"
-            >
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3">
-                    <span className="text-white font-bold">O</span>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Offres</dt>
-                      <dd className="text-lg font-medium text-gray-900">Mes offres</dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </Link>
-
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 bg-green-500 rounded-md p-3">
-                    <span className="text-white font-bold">C</span>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Candidatures</dt>
-                      <dd className="text-lg font-medium text-gray-900">Candidatures reçues</dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <Link
-              to="/dashboard/recruteur/offres/creer"
-              className="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow cursor-pointer"
-            >
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 bg-blue-500 rounded-md p-3">
-                    <span className="text-white font-bold">+</span>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Nouvelle offre</dt>
-                      <dd className="text-lg font-medium text-gray-900">Créer une offre</dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          </div>
-
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">Mes offres</h3>
-              <div className="mt-5">
-                <Link
-                  to="/dashboard/recruteur/offres"
-                  className="text-indigo-600 hover:text-indigo-500"
-                >
-                  Voir toutes mes offres →
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
+    <MainLayout role="RECRUTEUR" userName={userName}>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-[#1E293B]">Tableau de bord Linkia</h1>
+        <p className="text-gray-600 mt-2">Bienvenue, {userName}! Gérez vos offres et candidatures.</p>
       </div>
-    </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Link
+          to="/dashboard/recruteur/offres"
+          className="bg-white rounded-xl shadow-sm p-8 hover:shadow-md transition-all duration-300 border border-[#E2E8F0] group"
+        >
+          <div className="flex items-center gap-6">
+            <div className="p-4 bg-[#3B82F6]/10 rounded-xl group-hover:bg-[#3B82F6]/20 transition-colors">
+              <Briefcase className="w-8 h-8 text-[#3B82F6]" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-2xl font-semibold text-[#1E293B] group-hover:text-[#3B82F6] transition-colors">
+                Mes Offres
+              </h2>
+              <p className="text-gray-600 mt-1">Gérez vos offres d'emploi</p>
+            </div>
+            <ArrowRight className="w-6 h-6 text-gray-400 group-hover:text-[#3B82F6] group-hover:translate-x-1 transition-all" />
+          </div>
+        </Link>
+
+        <Link
+          to="/dashboard/recruteur/candidatures"
+          className="bg-white rounded-xl shadow-sm p-8 hover:shadow-md transition-all duration-300 border border-[#E2E8F0] group"
+        >
+          <div className="flex items-center gap-6">
+            <div className="p-4 bg-[#10B981]/10 rounded-xl group-hover:bg-[#10B981]/20 transition-colors">
+              <Users className="w-8 h-8 text-[#10B981]" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-2xl font-semibold text-[#1E293B] group-hover:text-[#10B981] transition-colors">
+                Candidatures Reçues
+              </h2>
+              <p className="text-gray-600 mt-1">Consultez les candidats</p>
+            </div>
+            <ArrowRight className="w-6 h-6 text-gray-400 group-hover:text-[#10B981] group-hover:translate-x-1 transition-all" />
+          </div>
+        </Link>
+
+        <Link
+          to="/dashboard/recruteur/offres/creer"
+          className="bg-white rounded-xl shadow-sm p-8 hover:shadow-md transition-all duration-300 border border-[#E2E8F0] group"
+        >
+          <div className="flex items-center gap-6">
+            <div className="p-4 bg-[#3B82F6]/10 rounded-xl group-hover:bg-[#3B82F6]/20 transition-colors">
+              <Plus className="w-8 h-8 text-[#3B82F6]" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-2xl font-semibold text-[#1E293B] group-hover:text-[#3B82F6] transition-colors">
+                Publier une Offre
+              </h2>
+              <p className="text-gray-600 mt-1">Créez une nouvelle offre</p>
+            </div>
+            <ArrowRight className="w-6 h-6 text-gray-400 group-hover:text-[#3B82F6] group-hover:translate-x-1 transition-all" />
+          </div>
+        </Link>
+
+        <Link
+          to="/dashboard/recruteur/profil"
+          className="bg-white rounded-xl shadow-sm p-8 hover:shadow-md transition-all duration-300 border border-[#E2E8F0] group"
+        >
+          <div className="flex items-center gap-6">
+            <div className="p-4 bg-[#8B5CF6]/10 rounded-xl group-hover:bg-[#8B5CF6]/20 transition-colors">
+              <User className="w-8 h-8 text-[#8B5CF6]" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-2xl font-semibold text-[#1E293B] group-hover:text-[#8B5CF6] transition-colors">
+                Mon Profil
+              </h2>
+              <p className="text-gray-600 mt-1">Gérez vos informations</p>
+            </div>
+            <ArrowRight className="w-6 h-6 text-gray-400 group-hover:text-[#8B5CF6] group-hover:translate-x-1 transition-all" />
+          </div>
+        </Link>
+      </div>
+    </MainLayout>
   );
 }

@@ -1,5 +1,6 @@
 package com.AppRecrutement.AppRecrutement.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -12,16 +13,17 @@ public class Formation {
     private String diplome;
     private String etablissement;
     private String specialite;
-    private Integer anneeObtention;
+    private String anneeObtention;  // Format YYYY-MM-DD
 
     @ManyToOne
     @JoinColumn(name = "candidat_id")
+    @JsonIgnore
     private Candidat candidat;
 
     public Formation() {
     }
 
-    public Formation(String diplome, String etablissement, String specialite, Integer anneeObtention) {
+    public Formation(String diplome, String etablissement, String specialite, String anneeObtention) {
         this.diplome = diplome;
         this.etablissement = etablissement;
         this.specialite = specialite;
@@ -60,11 +62,11 @@ public class Formation {
         this.specialite = specialite;
     }
 
-    public Integer getAnneeObtention() {
+    public String getAnneeObtention() {
         return anneeObtention;
     }
 
-    public void setAnneeObtention(Integer anneeObtention) {
+    public void setAnneeObtention(String anneeObtention) {
         this.anneeObtention = anneeObtention;
     }
 

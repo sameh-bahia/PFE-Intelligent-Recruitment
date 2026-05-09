@@ -10,4 +10,5 @@ import java.util.List;
 public interface CompetenceRepository extends JpaRepository<Competence, Long> {
     List<Competence> findByCategorie(String categorie);
     List<Competence> findByNomContaining(String nom);
+    java.util.Optional<Competence> findByNom(String nom);
 }

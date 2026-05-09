@@ -23,4 +23,18 @@ api.interceptors.request.use(
   }
 );
 
+// Intercepteur pour gérer les erreurs 401 (Unauthorized)
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Token expiré ou invalide - vider le localStorage et rediriger vers login
+      localStorage.removeItem('token');
+      localStorage.removeItem('role');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

@@ -53,6 +53,27 @@ export default {
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
         },
+        // Custom colors for professional design
+        navy: {
+          DEFAULT: "#1E293B",
+          light: "#334155",
+          lighter: "#475569",
+        },
+        electric: {
+          DEFAULT: "#3B82F6",
+          dark: "#2563EB",
+          light: "#60A5FA",
+        },
+        light: {
+          bg: "#F8FAFC",
+          card: "#FFFFFF",
+          border: "#E2E8F0",
+        },
+        status: {
+          success: "#10B981",
+          warning: "#F59E0B",
+          error: "#EF4444",
+        },
       },
     },
   },
