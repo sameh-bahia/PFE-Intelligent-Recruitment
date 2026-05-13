@@ -1,7 +1,7 @@
 package com.AppRecrutement.AppRecrutement.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.util.Date;
 import java.util.List;
@@ -32,7 +32,7 @@ public class CV {
     private Candidat candidat;
 
     /** Liste des compétences extraites du CV */
-    @JsonIgnore
+    @JsonIgnoreProperties("cvs")
     @ManyToMany(mappedBy = "cvs")
     private List<Competence> competences;
 

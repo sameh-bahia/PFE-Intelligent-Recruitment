@@ -1,7 +1,10 @@
 package com.AppRecrutement.AppRecrutement.controller;
 
+import com.AppRecrutement.AppRecrutement.model.Competence;
 import com.AppRecrutement.AppRecrutement.model.Offre;
 import com.AppRecrutement.AppRecrutement.model.Recruteur;
+import com.AppRecrutement.AppRecrutement.model.TypeContrat;
+import com.AppRecrutement.AppRecrutement.repository.CompetenceRepository;
 import com.AppRecrutement.AppRecrutement.repository.RecruteurRepository;
 import com.AppRecrutement.AppRecrutement.service.OffreService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,12 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.*;
 
-/**
- * Contrôleur REST pour gérer les offres d'emploi.
- * Fournit les endpoints CRUD pour les offres et un endpoint pour récupérer les offres du recruteur connecté.
- */
 @RestController
 @RequestMapping("/api/offres")
 public class OffreController {
@@ -24,6 +23,9 @@ public class OffreController {
 
     @Autowired
     private RecruteurRepository recruteurRepository;
+
+    @Autowired
+    private CompetenceRepository competenceRepository;
 
     /**
      * Récupère toutes les offres d'emploi.
@@ -62,19 +64,67 @@ public class OffreController {
     /**
      * Crée une nouvelle offre d'emploi.
      * L'offre est automatiquement associée au recruteur connecté.
-     * @param offre Offre à créer
+     * @param payload Map contenant les données de l'offre (titre, description, typeContrat, salaire, lieu, competences)
      * @param authentication Authentification JWT du recruteur connecté
      * @return Offre créée
      */
     @PostMapping
-    public Offre createOffre(@RequestBody Offre offre, Authentication authentication) {
+    public Offre createOffre(@RequestBody Map<String, Object> payload, Authentication authentication) {
         String email = authentication.getName();
         Recruteur recruteur = recruteurRepository.findByEmail(email);
         if (recruteur == null) {
             throw new RuntimeException("Recruteur non trouvé");
         }
+
+        Offre offre = new Offre();
+        offre.setTitre((String) payload.get("titre"));
+        offre.setDescription((String) payload.get("description"));
+        
+        // Convertir le type de contrat String en enum
+        String typeContratStr = (String) payload.get("typeContrat");
+        if (typeContratStr != null && !typeContratStr.isEmpty()) {
+            offre.setTypeContrat(TypeContrat.valueOf(typeContratStr.toUpperCase()));
+        }
+        
+        offre.setSalaire((String) payload.get("salaire"));
+        offre.setLieu((String) payload.get("lieu"));
         offre.setRecruteur(recruteur);
-        return offreService.save(offre);
+        offre.setEstOuverte(true);
+
+        // Sauvegarder l'offre d'abord
+        Offre savedOffre = offreService.save(offre);
+
+        // Gérer les compétences
+        String competencesStr = (String) payload.get("competences");
+        if (competencesStr != null && !competencesStr.trim().isEmpty()) {
+            List<Competence> competences = new ArrayList<>();
+            String[] competenceNames = competencesStr.split(",");
+            for (String competenceName : competenceNames) {
+                String trimmedName = competenceName.trim();
+                if (!trimmedName.isEmpty()) {
+                    // Vérifier si la compétence existe déjà
+                    java.util.Optional<Competence> existingCompetence = competenceRepository.findByNom(trimmedName);
+                    Competence competence;
+                    if (existingCompetence.isPresent()) {
+                        competence = existingCompetence.get();
+                    } else {
+                        competence = new Competence(trimmedName, "TECHNIQUE");
+                        competence = competenceRepository.save(competence);
+                    }
+                    // Ajouter l'offre à la liste des offres de la compétence (car Competence est le propriétaire de la relation)
+                    if (competence.getOffres() == null) {
+                        competence.setOffres(new ArrayList<>());
+                    }
+                    competence.getOffres().add(savedOffre);
+                    competenceRepository.save(competence);
+                    competences.add(competence);
+                }
+            }
+            savedOffre.setCompetences(competences);
+            offreService.save(savedOffre);
+        }
+
+        return savedOffre;
     }
 
     /**
@@ -88,6 +138,26 @@ public class OffreController {
         if (offreService.findById(id).isPresent()) {
             offre.setId(id);
             return ResponseEntity.ok(offreService.save(offre));
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    /**
+     * Met à jour le statut d'une offre (ouvrir/fermer).
+     * @param id Identifiant de l'offre à mettre à jour
+     * @param payload Map contenant le nouveau statut estOuverte
+     * @return Offre mise à jour ou 404 si non trouvée
+     */
+    @PutMapping("/{id}/statut")
+    public ResponseEntity<Offre> updateOffreStatut(@PathVariable Long id, @RequestBody Map<String, Boolean> payload) {
+        java.util.Optional<Offre> offreOpt = offreService.findById(id);
+        if (offreOpt.isPresent()) {
+            Offre offre = offreOpt.get();
+            Boolean estOuverte = payload.get("estOuverte");
+            if (estOuverte != null) {
+                offre.setEstOuverte(estOuverte);
+                return ResponseEntity.ok(offreService.save(offre));
+            }
         }
         return ResponseEntity.notFound().build();
     }

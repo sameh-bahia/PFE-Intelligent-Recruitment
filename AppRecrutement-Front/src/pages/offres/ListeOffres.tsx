@@ -14,6 +14,7 @@ interface Offre {
   datePublication: string;
   statut?: string;
   candidats?: number;
+  competences?: Array<{ nom: string; categorie: string }>;
 }
 
 export default function ListeOffres() {
@@ -182,6 +183,9 @@ export default function ListeOffres() {
                   Lieu
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Compétences
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Statut
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -209,6 +213,19 @@ export default function ListeOffres() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     {offre.lieu}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {offre.competences && offre.competences.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {offre.competences.map((comp, index) => (
+                          <span key={index} className="px-2 py-1 bg-[#6366F1]/10 text-[#6366F1] rounded-full text-xs font-medium">
+                            {comp.nom}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">Aucune</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     {getStatutBadge(offre.statut)}

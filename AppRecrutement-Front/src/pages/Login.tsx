@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Building2 } from 'lucide-react';
+import Logo from '@/components/Logo';
 import api from '@/lib/api';
 
 export default function Login() {
@@ -45,15 +45,17 @@ export default function Login() {
         {/* Left side - Welcome */}
         <div className="w-1/2 bg-gradient-to-br from-[#1E293B] to-[#334155] p-16 flex flex-col justify-center">
           <div className="mb-8">
-            <div className="bg-[#3B82F6] p-6 rounded-2xl w-fit mb-8">
-              <Building2 className="w-12 h-12 text-white" />
+            <div className="mb-8">
+              <Logo />
             </div>
-            <h1 className="text-7xl font-bold text-white mb-8 tracking-tight">
-              BIENVENUE
-            </h1>
-            <p className="text-white text-xl leading-relaxed text-white/70">
-              Connecter les talents aux opportunités de demain.
-            </p>
+            <div>
+              <h1 className="text-7xl font-bold text-white mb-8 tracking-tight">
+                BIENVENUE
+              </h1>
+              <p className="text-white text-xl leading-relaxed text-white/70">
+                Connecter les talents aux opportunités de demain.
+              </p>
+            </div>
           </div>
           <div className="mt-auto">
             <p className="text-white text-sm">
@@ -91,7 +93,7 @@ export default function Login() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-5 py-4 h-14 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
+                  className="w-full px-5 py-4 h-14 bg-white/70 backdrop-blur-sm border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:shadow-lg focus:shadow-[#3B82F6]/20 transition-all duration-300 text-lg"
                   placeholder="votre@email.com"
                 />
               </div>
@@ -108,7 +110,7 @@ export default function Login() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-5 py-4 h-14 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
+                  className="w-full px-5 py-4 h-14 bg-white/70 backdrop-blur-sm border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:shadow-lg focus:shadow-[#3B82F6]/20 transition-all duration-300 text-lg"
                   placeholder="••••••••"
                 />
               </div>

@@ -10,7 +10,8 @@ export default function CreerOffre() {
     description: '',
     typeContrat: '',
     salaire: '',
-    lieu: ''
+    lieu: '',
+    competences: ''
   });
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -146,6 +147,24 @@ export default function CreerOffre() {
               onChange={handleChange}
               className="w-full px-5 py-4 h-14 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
             />
+          </div>
+
+          <div>
+            <label htmlFor="competences" className="block text-lg font-semibold text-[#1E293B] mb-3">
+              Compétences requises
+            </label>
+            <textarea
+              id="competences"
+              name="competences"
+              rows={3}
+              value={formData.competences}
+              onChange={handleChange}
+              className="w-full px-5 py-4 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
+              placeholder="Entrez les compétences requises, séparées par des virgules (ex: Java, Spring, PostgreSQL, Docker)"
+            />
+            <p className="text-sm text-gray-500 mt-2">
+              Séparez les compétences par des virgules
+            </p>
           </div>
 
           <div className="flex justify-end gap-4 pt-6">

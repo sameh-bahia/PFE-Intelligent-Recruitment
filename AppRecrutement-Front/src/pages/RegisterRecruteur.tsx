@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Building2 } from 'lucide-react';
+import Logo from '@/components/Logo';
+import { Mail, Lock, User, Building, MapPin, Calendar, Check, X, Eye, EyeOff, Briefcase, Brain, Clock, Layout } from 'lucide-react';
 import api from '@/lib/api';
 
 export default function RegisterRecruteur() {
@@ -15,6 +16,11 @@ export default function RegisterRecruteur() {
     adresse: ''
   });
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [fieldValidities, setFieldValidities] = useState<Record<string, boolean>>({});
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,7 +38,64 @@ export default function RegisterRecruteur() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    setTouchedFields({ ...touchedFields, [name]: true });
+    validateField(name, value);
+  };
+
+  const validateField = (name: string, value: string) => {
+    let error = '';
+    let isValid = false;
+
+    switch (name) {
+      case 'email':
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        isValid = emailRegex.test(value);
+        error = isValid ? '' : 'Email invalide';
+        break;
+      case 'motDePasse':
+        const strength = calculatePasswordStrength(value);
+        setPasswordStrength(strength);
+        isValid = strength >= 2;
+        error = isValid ? '' : 'Mot de passe trop faible (min 8 caractères, 1 majuscule, 1 chiffre)';
+        break;
+      case 'nom':
+      case 'prenom':
+        isValid = value.trim().length >= 2;
+        error = isValid ? '' : 'Minimum 2 caractères';
+        break;
+      case 'nomEntreprise':
+      case 'poste':
+        isValid = value.trim().length >= 2;
+        error = isValid ? '' : 'Minimum 2 caractères';
+        break;
+      default:
+        isValid = true;
+    }
+
+    setFieldErrors({ ...fieldErrors, [name]: error });
+    setFieldValidities({ ...fieldValidities, [name]: isValid });
+  };
+
+  const calculatePasswordStrength = (password: string): number => {
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+    return strength;
+  };
+
+  const getPasswordStrengthColor = () => {
+    if (passwordStrength <= 1) return 'bg-red-500';
+    if (passwordStrength === 2) return 'bg-orange-500';
+    return 'bg-green-500';
+  };
+
+  const isFormValid = () => {
+    const requiredFields = ['email', 'motDePasse', 'nom', 'prenom', 'nomEntreprise', 'poste'];
+    return requiredFields.every(field => fieldValidities[field] && formData[field as keyof typeof formData]);
   };
 
   return (
@@ -47,16 +110,47 @@ export default function RegisterRecruteur() {
         {/* Left side - Welcome */}
         <div className="w-1/2 bg-gradient-to-br from-[#1E293B] to-[#334155] p-16 flex flex-col justify-center">
           <div className="mb-8">
-            <div className="bg-[#3B82F6] p-6 rounded-2xl w-fit mb-8">
-              <Building2 className="w-12 h-12 text-white" />
+            <div className="mb-8">
+              <Logo />
             </div>
             <h1 className="text-7xl font-bold text-white mb-8 tracking-tight">
-              INSCRIPTION
+              Créez votre espace recruteur
             </h1>
             <p className="text-white text-xl leading-relaxed text-white/70">
               Recrutez les meilleurs talents sur Linkia.
             </p>
           </div>
+
+          <div className="mt-12 space-y-6">
+            <div className="flex items-start gap-4">
+              <div className="bg-green-500/20 p-2 rounded-lg">
+                <Brain className="w-6 h-6 text-green-400" />
+              </div>
+              <div>
+                <p className="text-white font-semibold text-lg">Scoring IA précis</p>
+                <p className="text-white/60 text-sm">Matching intelligent basé sur les compétences</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="bg-green-500/20 p-2 rounded-lg">
+                <Clock className="w-6 h-6 text-green-400" />
+              </div>
+              <div>
+                <p className="text-white font-semibold text-lg">Gain de temps majeur</p>
+                <p className="text-white/60 text-sm">Automatisation du processus de recrutement</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="bg-green-500/20 p-2 rounded-lg">
+                <Layout className="w-6 h-6 text-green-400" />
+              </div>
+              <div>
+                <p className="text-white font-semibold text-lg">Interface intuitive</p>
+                <p className="text-white/60 text-sm">Design moderne et facile à utiliser</p>
+              </div>
+            </div>
+          </div>
+
           <div className="mt-auto">
             <p className="text-white text-sm">
               © 2024 Linkia
@@ -86,31 +180,67 @@ export default function RegisterRecruteur() {
                   <label htmlFor="nom" className="block text-lg font-semibold text-[#1E293B] mb-3">
                     Nom
                   </label>
-                  <input
-                    id="nom"
-                    name="nom"
-                    type="text"
-                    required
-                    value={formData.nom}
-                    onChange={handleChange}
-                    className="w-full px-5 py-4 h-14 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
-                    placeholder="Votre nom"
-                  />
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      id="nom"
+                      name="nom"
+                      type="text"
+                      required
+                      value={formData.nom}
+                      onChange={handleChange}
+                      className={`w-full pl-12 pr-4 py-3 h-12 bg-white border-2 rounded-xl focus:outline-none transition-all text-lg ${
+                        touchedFields.nom 
+                          ? fieldValidities.nom 
+                            ? 'border-green-500' 
+                            : 'border-red-500'
+                          : 'border-gray-200 focus:border-blue-500'
+                      }`}
+                      placeholder="Votre nom"
+                    />
+                    {touchedFields.nom && fieldValidities.nom && (
+                      <Check className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                    )}
+                    {touchedFields.nom && !fieldValidities.nom && (
+                      <X className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500" />
+                    )}
+                  </div>
+                  {touchedFields.nom && fieldErrors.nom && (
+                    <p className="text-red-500 text-sm mt-1">{fieldErrors.nom}</p>
+                  )}
                 </div>
                 <div>
                   <label htmlFor="prenom" className="block text-lg font-semibold text-[#1E293B] mb-3">
                     Prénom
                   </label>
-                  <input
-                    id="prenom"
-                    name="prenom"
-                    type="text"
-                    required
-                    value={formData.prenom}
-                    onChange={handleChange}
-                    className="w-full px-5 py-4 h-14 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
-                    placeholder="Votre prénom"
-                  />
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      id="prenom"
+                      name="prenom"
+                      type="text"
+                      required
+                      value={formData.prenom}
+                      onChange={handleChange}
+                      className={`w-full pl-12 pr-4 py-3 h-12 bg-white border-2 rounded-xl focus:outline-none transition-all text-lg ${
+                        touchedFields.prenom 
+                          ? fieldValidities.prenom 
+                            ? 'border-green-500' 
+                            : 'border-red-500'
+                          : 'border-gray-200 focus:border-blue-500'
+                      }`}
+                      placeholder="Votre prénom"
+                    />
+                    {touchedFields.prenom && fieldValidities.prenom && (
+                      <Check className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                    )}
+                    {touchedFields.prenom && !fieldValidities.prenom && (
+                      <X className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500" />
+                    )}
+                  </div>
+                  {touchedFields.prenom && fieldErrors.prenom && (
+                    <p className="text-red-500 text-sm mt-1">{fieldErrors.prenom}</p>
+                  )}
                 </div>
               </div>
 
@@ -118,98 +248,192 @@ export default function RegisterRecruteur() {
                 <label htmlFor="email" className="block text-lg font-semibold text-[#1E293B] mb-3">
                   Email
                 </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full px-5 py-4 h-14 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
-                  placeholder="votre@email.com"
-                />
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={handleChange}
+                    className={`w-full pl-12 pr-4 py-3 h-12 bg-white border-2 rounded-xl focus:outline-none transition-all text-lg ${
+                      touchedFields.email 
+                        ? fieldValidities.email 
+                          ? 'border-green-500' 
+                          : 'border-red-500'
+                        : 'border-gray-200 focus:border-blue-500'
+                    }`}
+                    placeholder="votre@email.com"
+                  />
+                  {touchedFields.email && fieldValidities.email && (
+                    <Check className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                  )}
+                  {touchedFields.email && !fieldValidities.email && (
+                    <X className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500" />
+                  )}
+                </div>
+                {touchedFields.email && fieldErrors.email && (
+                  <p className="text-red-500 text-sm mt-1">{fieldErrors.email}</p>
+                )}
               </div>
 
               <div>
                 <label htmlFor="motDePasse" className="block text-lg font-semibold text-[#1E293B] mb-3">
                   Mot de passe
                 </label>
-                <input
-                  id="motDePasse"
-                  name="motDePasse"
-                  type="password"
-                  required
-                  value={formData.motDePasse}
-                  onChange={handleChange}
-                  className="w-full px-5 py-4 h-14 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
-                  placeholder="••••••••"
-                />
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    id="motDePasse"
+                    name="motDePasse"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={formData.motDePasse}
+                    onChange={handleChange}
+                    className={`w-full pl-12 pr-12 py-3 h-12 bg-white border-2 rounded-xl focus:outline-none transition-all text-lg ${
+                      touchedFields.motDePasse 
+                        ? fieldValidities.motDePasse 
+                          ? 'border-green-500' 
+                          : 'border-red-500'
+                        : 'border-gray-200 focus:border-blue-500'
+                    }`}
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                {formData.motDePasse && (
+                  <div className="mt-2">
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full transition-all duration-300 ${getPasswordStrengthColor()}`}
+                        style={{ width: `${(passwordStrength / 4) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )}
+                {touchedFields.motDePasse && fieldErrors.motDePasse && (
+                  <p className="text-red-500 text-sm mt-1">{fieldErrors.motDePasse}</p>
+                )}
               </div>
 
               <div>
                 <label htmlFor="nomEntreprise" className="block text-lg font-semibold text-[#1E293B] mb-3">
                   Nom de l'entreprise
                 </label>
-                <input
-                  id="nomEntreprise"
-                  name="nomEntreprise"
-                  type="text"
-                  required
-                  value={formData.nomEntreprise}
-                  onChange={handleChange}
-                  className="w-full px-5 py-4 h-14 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
-                  placeholder="Ex: Tech Corp"
-                />
+                <div className="relative">
+                  <Building className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    id="nomEntreprise"
+                    name="nomEntreprise"
+                    type="text"
+                    required
+                    value={formData.nomEntreprise}
+                    onChange={handleChange}
+                    className={`w-full pl-12 pr-4 py-3 h-12 bg-white border-2 rounded-xl focus:outline-none transition-all text-lg ${
+                      touchedFields.nomEntreprise 
+                        ? fieldValidities.nomEntreprise 
+                          ? 'border-green-500' 
+                          : 'border-red-500'
+                        : 'border-gray-200 focus:border-blue-500'
+                    }`}
+                    placeholder="Ex: Tech Corp"
+                  />
+                  {touchedFields.nomEntreprise && fieldValidities.nomEntreprise && (
+                    <Check className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                  )}
+                  {touchedFields.nomEntreprise && !fieldValidities.nomEntreprise && (
+                    <X className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500" />
+                  )}
+                </div>
+                {touchedFields.nomEntreprise && fieldErrors.nomEntreprise && (
+                  <p className="text-red-500 text-sm mt-1">{fieldErrors.nomEntreprise}</p>
+                )}
               </div>
 
               <div>
                 <label htmlFor="poste" className="block text-lg font-semibold text-[#1E293B] mb-3">
                   Poste
                 </label>
-                <input
-                  id="poste"
-                  name="poste"
-                  type="text"
-                  required
-                  value={formData.poste}
-                  onChange={handleChange}
-                  className="w-full px-5 py-4 h-14 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
-                  placeholder="Ex: Responsable RH"
-                />
+                <div className="relative">
+                  <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    id="poste"
+                    name="poste"
+                    type="text"
+                    required
+                    value={formData.poste}
+                    onChange={handleChange}
+                    className={`w-full pl-12 pr-4 py-3 h-12 bg-white border-2 rounded-xl focus:outline-none transition-all text-lg ${
+                      touchedFields.poste 
+                        ? fieldValidities.poste 
+                          ? 'border-green-500' 
+                          : 'border-red-500'
+                        : 'border-gray-200 focus:border-blue-500'
+                    }`}
+                    placeholder="Ex: Responsable RH"
+                  />
+                  {touchedFields.poste && fieldValidities.poste && (
+                    <Check className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                  )}
+                  {touchedFields.poste && !fieldValidities.poste && (
+                    <X className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500" />
+                  )}
+                </div>
+                {touchedFields.poste && fieldErrors.poste && (
+                  <p className="text-red-500 text-sm mt-1">{fieldErrors.poste}</p>
+                )}
               </div>
 
               <div>
                 <label htmlFor="adresse" className="block text-lg font-semibold text-[#1E293B] mb-3">
                   Adresse
                 </label>
-                <input
-                  id="adresse"
-                  name="adresse"
-                  type="text"
-                  value={formData.adresse}
-                  onChange={handleChange}
-                  className="w-full px-5 py-4 h-14 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
-                  placeholder="Votre adresse"
-                />
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    id="adresse"
+                    name="adresse"
+                    type="text"
+                    value={formData.adresse}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-3 h-12 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-all text-lg"
+                    placeholder="Votre adresse"
+                  />
+                </div>
               </div>
 
               <div>
                 <label htmlFor="dateNaissance" className="block text-lg font-semibold text-[#1E293B] mb-3">
                   Date de naissance
                 </label>
-                <input
-                  id="dateNaissance"
-                  name="dateNaissance"
-                  type="date"
-                  value={formData.dateNaissance}
-                  onChange={handleChange}
-                  className="w-full px-5 py-4 h-14 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
-                />
+                <div className="relative">
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    id="dateNaissance"
+                    name="dateNaissance"
+                    type="date"
+                    value={formData.dateNaissance}
+                    onChange={handleChange}
+                    className="w-full pl-12 pr-4 py-3 h-12 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-all text-lg"
+                  />
+                </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full h-14 px-4 bg-[#3B82F6] text-white rounded-full hover:bg-[#2563EB] transition-all font-bold text-xl shadow-lg shadow-[#3B82F6]/30"
+                disabled={!isFormValid()}
+                className={`w-full h-14 px-4 rounded-full transition-all font-bold text-xl shadow-lg ${
+                  isFormValid()
+                    ? 'bg-[#3B82F6] text-white hover:bg-[#2563EB] shadow-[#3B82F6]/30'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
               >
                 S'inscrire
               </button>

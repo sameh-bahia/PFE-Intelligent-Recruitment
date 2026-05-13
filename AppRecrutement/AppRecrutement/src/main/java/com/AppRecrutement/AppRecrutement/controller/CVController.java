@@ -168,6 +168,9 @@ public class CVController {
             cv.setCheminFichier(filePath.toString());
             cv.setDateUpload(new java.util.Date());
 
+            // Sauvegarder le CV d'abord
+            CV savedCV = cvService.save(cv);
+
             // Extraire le texte du CV
             try {
                 String texteBrut = cvExtractionService.extractTextFromFile(filePath.toString());
@@ -199,8 +202,8 @@ public class CVController {
                     if (competenceToLink.getCvs() == null) {
                         competenceToLink.setCvs(new java.util.ArrayList<>());
                     }
-                    if (!competenceToLink.getCvs().contains(cv)) {
-                        competenceToLink.getCvs().add(cv);
+                    if (!competenceToLink.getCvs().contains(savedCV)) {
+                        competenceToLink.getCvs().add(savedCV);
                         competenceRepository.save(competenceToLink);
                     }
                 }
@@ -273,8 +276,6 @@ public class CVController {
                 System.err.println("Erreur lors de l'extraction IA du CV: " + e.getMessage());
                 e.printStackTrace();
             }
-
-            CV savedCV = cvService.save(cv);
             
             return ResponseEntity.ok(savedCV);
 

@@ -1,6 +1,7 @@
 package com.AppRecrutement.AppRecrutement.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -44,7 +45,7 @@ public class Offre {
     @OneToMany(mappedBy = "offre", cascade = CascadeType.ALL)
     private List<Candidature> candidatures;
 
-    @JsonIgnore
+    @JsonIgnoreProperties("offres")
     @ManyToMany(mappedBy = "offres")
     private List<Competence> competences;
 

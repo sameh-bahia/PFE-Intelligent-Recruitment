@@ -418,7 +418,7 @@ def parse_formations(formation_text: str) -> List[Dict]:
                 current_block.append(line)
         
         # Ajouter le dernier bloc
-        if current_block and len(current_block) >= 2:
+        if current_block and len(current_block) >= 1:
             blocks.append('\n'.join(current_block))
     
     print(f"[DEBUG] Nombre de blocs formations: {len(blocks)}")
@@ -448,11 +448,25 @@ def parse_formations(formation_text: str) -> List[Dict]:
         if lines:
             first_line = lines[0].strip()
             print(f"[DEBUG] Formation - Première ligne: '{first_line}'")
-            # Toute la première ligne est le diplôme
-            formation["diplome"] = first_line
-            print(f"[DEBUG] Formation - Diplôme: '{formation['diplome']}'")
+            # Si la ligne contient "|", c'est probablement un format compact "Diplôme | Établissement | Année"
+            if '|' in first_line and len(lines) == 1:
+                parts = first_line.split('|')
+                if len(parts) >= 1:
+                    formation["diplome"] = parts[0].strip()
+                if len(parts) >= 2:
+                    formation["etablissement"] = parts[1].strip()
+                if len(parts) >= 3:
+                    year_match = re.search(r'(\d{4})', parts[2])
+                    if year_match:
+                        year = int(year_match.group(1))
+                        formation["anneeObtention"] = f"{year}-01-01"
+                print(f"[DEBUG] Formation - Format compact - Diplôme: '{formation['diplome']}', Établissement: '{formation['etablissement']}', Année: '{formation['anneeObtention']}'")
+            else:
+                # Format standard: première ligne est le diplôme
+                formation["diplome"] = first_line
+                print(f"[DEBUG] Formation - Diplôme: '{formation['diplome']}'")
         
-        # Deuxième ligne: établissement et année
+        # Deuxième ligne: établissement et année (si existe)
         if len(lines) > 1:
             second_line = lines[1].strip()
             print(f"[DEBUG] Formation - Deuxième ligne: '{second_line}'")
