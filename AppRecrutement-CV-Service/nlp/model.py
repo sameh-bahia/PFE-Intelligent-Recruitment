@@ -48,94 +48,94 @@ def load_model():
             import subprocess
             subprocess.run(["python", "-m", "spacy", "download", "xx_ent_wiki_sm"])
             nlp = spacy.load("xx_ent_wiki_sm")
-        
-        # ============================================================
-        # AJOUT DES PATTERNS ENTITYRULER POUR LES COMPÉTENCES
-        # Même avec le modèle de base, on ajoute les patterns pour extraire les compétences
-        # ============================================================
-        print("Ajout des patterns EntityRuler pour les compétences...")
-        
-        competence_patterns = [
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "java"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "python"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "spring"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "spring boot"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "hibernate"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "django"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "flask"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "react"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "angular"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "javascript"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "sql"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "postgresql"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "mysql"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "mongodb"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "docker"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "kubernetes"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "k8s"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "git"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "ci/cd"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "devops"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "c#"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": ".net"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "asp.net"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "azure"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "aws"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "gcp"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "microservices"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "rest"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "graphql"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "agile"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "scrum"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "kanban"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "jira"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "trello"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "confluence"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "machine learning"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "deep learning"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "tensorflow"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "pytorch"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "keras"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "pandas"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "numpy"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "tableau"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "power bi"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "excel"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "figma"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "sketch"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "adobe xd"}]},
-            # Compétences Logistique et Supply Chain
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "gestion de stock"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "supply chain"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "négociation fournisseurs"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "optimisation des flux"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "erp"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "sap"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "management d'équipe"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "transport international"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "logistique"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "approvisionnement"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "planification"}]},
-            {"label": "COMPETENCE", "pattern": [{"LOWER": "audit"}]},
-            {"label": "COMPETENCE", "pattern": [{"TEXT": "Gestion"}]},
-            {"label": "COMPETENCE", "pattern": [{"TEXT": "Supply"}]},
-            {"label": "COMPETENCE", "pattern": [{"TEXT": "Chain"}]},
-            {"label": "COMPETENCE", "pattern": [{"TEXT": "Négociation"}]},
-            {"label": "COMPETENCE", "pattern": [{"TEXT": "Fournisseurs"}]},
-            {"label": "COMPETENCE", "pattern": [{"TEXT": "Optimisation"}]},
-            {"label": "COMPETENCE", "pattern": [{"TEXT": "ERP"}]},
-            {"label": "COMPETENCE", "pattern": [{"TEXT": "SAP"}]},
-            {"label": "COMPETENCE", "pattern": [{"TEXT": "Management"}]},
-            {"label": "COMPETENCE", "pattern": [{"TEXT": "Transport"}]},
-        ]
-        
-        # Ajouter l'EntityRuler au pipeline AVANT le NER
-        if "entity_ruler" not in nlp.pipe_names:
-            ruler = nlp.add_pipe("entity_ruler", before="ner")
-            ruler.add_patterns(competence_patterns)
-            print(f"[OK] EntityRuler ajouté avec {len(competence_patterns)} patterns de compétences")
-        else:
-            print("[INFO] EntityRuler existe déjà")
+    
+    # ============================================================
+    # AJOUT DES PATTERNS ENTITYRULER POUR LES COMPÉTENCES
+    # Ajouté dans tous les cas (modèle entraîné ou de base)
+    # ============================================================
+    print("Ajout des patterns EntityRuler pour les compétences...")
+    
+    competence_patterns = [
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "java"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "python"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "spring"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "spring boot"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "hibernate"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "django"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "flask"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "react"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "angular"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "javascript"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "sql"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "postgresql"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "mysql"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "mongodb"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "docker"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "kubernetes"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "k8s"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "git"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "ci/cd"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "devops"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "c#"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": ".net"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "asp.net"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "azure"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "aws"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "gcp"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "microservices"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "rest"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "graphql"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "agile"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "scrum"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "kanban"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "jira"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "trello"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "confluence"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "machine learning"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "deep learning"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "tensorflow"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "pytorch"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "keras"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "pandas"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "numpy"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "tableau"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "power bi"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "excel"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "figma"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "sketch"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "adobe xd"}]},
+        # Compétences Logistique et Supply Chain
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "gestion de stock"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "supply chain"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "négociation fournisseurs"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "optimisation des flux"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "erp"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "sap"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "management d'équipe"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "transport international"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "logistique"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "approvisionnement"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "planification"}]},
+        {"label": "COMPETENCE", "pattern": [{"LOWER": "audit"}]},
+        {"label": "COMPETENCE", "pattern": [{"TEXT": "Gestion"}]},
+        {"label": "COMPETENCE", "pattern": [{"TEXT": "Supply"}]},
+        {"label": "COMPETENCE", "pattern": [{"TEXT": "Chain"}]},
+        {"label": "COMPETENCE", "pattern": [{"TEXT": "Négociation"}]},
+        {"label": "COMPETENCE", "pattern": [{"TEXT": "Fournisseurs"}]},
+        {"label": "COMPETENCE", "pattern": [{"TEXT": "Optimisation"}]},
+        {"label": "COMPETENCE", "pattern": [{"TEXT": "ERP"}]},
+        {"label": "COMPETENCE", "pattern": [{"TEXT": "SAP"}]},
+        {"label": "COMPETENCE", "pattern": [{"TEXT": "Management"}]},
+        {"label": "COMPETENCE", "pattern": [{"TEXT": "Transport"}]},
+    ]
+    
+    # Ajouter l'EntityRuler au pipeline AVANT le NER
+    if "entity_ruler" not in nlp.pipe_names:
+        ruler = nlp.add_pipe("entity_ruler", before="ner")
+        ruler.add_patterns(competence_patterns)
+        print(f"[OK] EntityRuler ajouté avec {len(competence_patterns)} patterns de compétences")
+    else:
+        print("[INFO] EntityRuler existe déjà")
     
     return nlp
 
@@ -175,25 +175,27 @@ def normalize_date_range(date_str: str) -> Dict[str, str]:
 
 def extract_cv_sections(text: str) -> Dict[str, str]:
     """
-    Extrait les sections du CV (Expériences, Formations) en utilisant des regex.
+    Extrait les sections du CV (Expériences, Formations, Compétences) en utilisant des regex.
     
     Args:
         text: Texte complet du CV
         
     Returns:
-        Dictionnaire avec les sections 'experiences' et 'formations'
+        Dictionnaire avec les sections 'experiences', 'formations' et 'competences'
     """
     sections = {
         "experiences": "",
-        "formations": ""
+        "formations": "",
+        "competences": ""
     }
     
     print(f"[DEBUG] ===== EXTRACT CV SECTIONS =====")
     print(f"[DEBUG] Longueur du texte complet: {len(text)}")
     
-    # Trouver la position de "PROFESSIONAL EXPERIENCE" et "EDUCATION"
-    experience_match = re.search(r'PROFESSIONAL EXPERIENCE', text, re.IGNORECASE)
-    education_match = re.search(r'EDUCATION', text, re.IGNORECASE)
+    # Trouver la position de "PROFESSIONAL EXPERIENCE" / "Expérience professionnelle", "EDUCATION" / "Formation" et "COMPÉTENCES CLÉS"
+    experience_match = re.search(r'(PROFESSIONAL EXPERIENCE|Expérience professionnelle|Expérience|Work Experience|EXPERIENCE)', text, re.IGNORECASE)
+    education_match = re.search(r'(EDUCATION|Formation|Education|Éducation|Diplômes|Diplomes)', text, re.IGNORECASE)
+    competences_match = re.search(r'(COMPÉTENCES CLÉS|COMPETENCES CLES|Compétences|Skills)', text, re.IGNORECASE)
     
     # Afficher le contexte autour de PROFESSIONAL EXPERIENCE
     if experience_match:
@@ -203,6 +205,7 @@ def extract_cv_sections(text: str) -> Dict[str, str]:
     
     print(f"[DEBUG] PROFESSIONAL EXPERIENCE trouvé: {experience_match is not None}")
     print(f"[DEBUG] EDUCATION trouvé: {education_match is not None}")
+    print(f"[DEBUG] COMPÉTENCES CLÉS trouvé: {competences_match is not None}")
     
     if experience_match and education_match:
         # Extraire le texte entre PROFESSIONAL EXPERIENCE et EDUCATION
@@ -246,8 +249,21 @@ def extract_cv_sections(text: str) -> Dict[str, str]:
         sections["formations"] = sections["formations"].split("LANGUAGES")[0].strip()
         print(f"[DEBUG] Section LANGUAGES exclue des formations (cas général)")
     
+    # Extraire la section compétences si trouvée
+    if competences_match:
+        start_comp = competences_match.end()
+        # Trouver la fin de la section compétences (jusqu'à la prochaine section ou fin du texte)
+        next_section_match = re.search(r'(EXPÉRIENCES PROFESSIONNELLES|EXPERIENCES PROFESSIONNELLES|PROFIL|LANGUAGES)', text[start_comp:], re.IGNORECASE)
+        if next_section_match:
+            end_comp = start_comp + next_section_match.start()
+        else:
+            end_comp = len(text)
+        sections["competences"] = text[start_comp:end_comp].strip()
+        print(f"[DEBUG] Section compétences extraite: {len(sections['competences'])} caractères")
+    
     print(f"[DEBUG] Longueur section expériences: {len(sections['experiences'])}")
     print(f"[DEBUG] Longueur section formations: {len(sections['formations'])}")
+    print(f"[DEBUG] Longueur section compétences: {len(sections['competences'])}")
     print(f"[DEBUG] ===== FIN EXTRACT CV SECTIONS =====")
     
     return sections
@@ -371,6 +387,40 @@ def parse_experiences(experience_text: str) -> List[Dict]:
             experiences.append(experience)
     
     return experiences
+
+def parse_competences(competence_text: str) -> List[str]:
+    """
+    Parse la section compétences pour extraire les compétences individuelles.
+    
+    Args:
+        competence_text: Texte de la section compétences
+        
+    Returns:
+        Liste de compétences (strings)
+    """
+    if not competence_text:
+        return []
+    
+    competences = []
+    
+    print(f"[DEBUG] Texte compétences à parser: {competence_text[:200]}...")
+    
+    # Diviser par des séparateurs courants (virgules, points-virgules, sauts de ligne)
+    # et nettoyer chaque compétence
+    raw_competences = re.split(r'[,;\n•\-\*]', competence_text)
+    
+    for comp in raw_competences:
+        comp = comp.strip()
+        # Ignorer les compétences vides ou trop courtes
+        if comp and len(comp) > 2:
+            # Nettoyer les caractères spéciaux
+            comp = re.sub(r'^[:\.\s]+', '', comp)
+            comp = re.sub(r'[:\.\s]+$', '', comp)
+            if comp and len(comp) > 2:
+                competences.append(comp)
+    
+    print(f"[DEBUG] Compétences extraites: {competences}")
+    return competences
 
 def parse_formations(formation_text: str) -> List[Dict]:
     """
@@ -555,6 +605,7 @@ def extract_entities(nlp, text: str) -> Dict[str, List[Dict]]:
     sections = extract_cv_sections(text)
     print(f"[DEBUG] Section expériences: {sections['experiences'][:200]}...")
     print(f"[DEBUG] Section formations: {sections['formations'][:200]}...")
+    print(f"[DEBUG] Section compétences: {sections['competences'][:200]}...")
     
     # ============================================================
     # PARSING DES EXPÉRIENCES ET FORMATIONS
@@ -566,34 +617,32 @@ def extract_entities(nlp, text: str) -> Dict[str, List[Dict]]:
     print(f"[DEBUG] Formations extraites: {len(formations)}")
     
     # ============================================================
+    # PARSING DES COMPÉTENCES (depuis la section textuelle)
+    # ============================================================
+    raw_competences = parse_competences(sections["competences"])
+    
+    # Convertir les compétences textuelles en format attendu par Java
+    competences = []
+    for comp in raw_competences:
+        competences.append({
+            "text": comp,
+            "label": "COMPETENCE",
+            "start": 0,
+            "end": len(comp)
+        })
+    
+    print(f"[DEBUG] Compétences extraites: {len(competences)}")
+    
+    # ============================================================
     # NETTOYAGE DES DOUBLONS
     # ============================================================
     experiences = remove_duplicates(experiences, "titrePoste")
     formations = remove_duplicates(formations, "diplome")
+    competences = remove_duplicates(competences, "text")
     
     print(f"[DEBUG] Expériences après dédoublonnage: {len(experiences)}")
     print(f"[DEBUG] Formations après dédoublonnage: {len(formations)}")
-    
-    # ============================================================
-    # EXTRACTION DES COMPÉTENCES AVEC SPACY
-    # ============================================================
-    doc = nlp(text)
-    competences = []
-    
-    # Parcourir toutes les entités détectées par le modèle
-    for ent in doc.ents:
-        if ent.label_ == 'COMPETENCE':
-            competences.append({
-                "text": ent.text,
-                "label": ent.label_,
-                "start": ent.start_char,
-                "end": ent.end_char
-            })
-    
-    # Nettoyer les doublons de compétences
-    competences = remove_duplicates(competences, "text")
-    
-    print(f"[DEBUG] Compétences extraites: {len(competences)}")
+    print(f"[DEBUG] Compétences après dédoublonnage: {len(competences)}")
     
     # ============================================================
     # LOG DE CONTRÔLE : Afficher ce que Python envoie au Java

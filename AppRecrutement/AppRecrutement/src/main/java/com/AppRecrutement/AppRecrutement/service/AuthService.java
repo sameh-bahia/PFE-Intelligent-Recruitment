@@ -58,14 +58,40 @@ public class AuthService {
     }
 
     public Candidat registerCandidat(Candidat candidat) {
+        // Validation du mot de passe
+        validatePassword(candidat.getMotDePasse());
+        
+        // Ajout automatique du préfixe +216 si absent
+        if (candidat.getTelephone() != null && !candidat.getTelephone().startsWith("+216")) {
+            candidat.setTelephone("+216" + candidat.getTelephone());
+        }
+        
         candidat.setMotDePasse(passwordEncoder.encode(candidat.getMotDePasse()));
         candidat.setRole(Role.CANDIDAT);
         return candidatRepository.save(candidat);
     }
 
     public Recruteur registerRecruteur(Recruteur recruteur) {
+        // Validation du mot de passe
+        validatePassword(recruteur.getMotDePasse());
+        
         recruteur.setMotDePasse(passwordEncoder.encode(recruteur.getMotDePasse()));
         recruteur.setRole(Role.RECRUTEUR);
         return recruteurRepository.save(recruteur);
+    }
+
+    private void validatePassword(String password) {
+        if (password == null || password.length() < 8) {
+            throw new IllegalArgumentException("Le mot de passe doit contenir au moins 8 caractères");
+        }
+        if (!password.matches(".*[A-Z].*")) {
+            throw new IllegalArgumentException("Le mot de passe doit contenir au moins une majuscule");
+        }
+        if (!password.matches(".*[a-z].*")) {
+            throw new IllegalArgumentException("Le mot de passe doit contenir au moins une minuscule");
+        }
+        if (!password.matches(".*[0-9].*")) {
+            throw new IllegalArgumentException("Le mot de passe doit contenir au moins un chiffre");
+        }
     }
 }

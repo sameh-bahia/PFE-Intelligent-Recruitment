@@ -12,11 +12,13 @@ export default function VoirOffres() {
   const [matchingResult, setMatchingResult] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
   const [calculatingScore, setCalculatingScore] = useState(false);
+  const [filterMode, setFilterMode] = useState<'all' | 'domain'>('all');
 
   useEffect(() => {
     const fetchOffres = async () => {
       try {
-        const response = await api.get('/offres');
+        const endpoint = filterMode === 'domain' ? '/offres/par-domaine' : '/offres';
+        const response = await api.get(endpoint);
         setOffres(response.data);
         setLoading(false);
       } catch (err) {
@@ -26,7 +28,7 @@ export default function VoirOffres() {
     };
 
     fetchOffres();
-  }, []);
+  }, [filterMode]);
 
   const calculateScore = async (offreId: number) => {
     setCalculatingScore(true);
@@ -34,8 +36,12 @@ export default function VoirOffres() {
       const response = await api.get(`/candidatures/calculate-score/${offreId}`);
       setMatchingResult(response.data);
       setShowModal(true);
-    } catch (err) {
-      setError('Erreur lors du calcul du score');
+    } catch (err: any) {
+      if (err.response && err.response.data) {
+        setError(err.response.data);
+      } else {
+        setError('Erreur lors du calcul du score');
+      }
     } finally {
       setCalculatingScore(false);
     }
@@ -54,6 +60,29 @@ export default function VoirOffres() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-[#1E293B]">Offres disponibles</h1>
         <p className="text-gray-600 mt-2">Découvrez les opportunités qui correspondent à votre profil</p>
+      </div>
+
+      <div className="mb-6 flex items-center gap-4">
+        <button
+          onClick={() => setFilterMode('all')}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            filterMode === 'all'
+              ? 'bg-[#3B82F6] text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Toutes les offres
+        </button>
+        <button
+          onClick={() => setFilterMode('domain')}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            filterMode === 'domain'
+              ? 'bg-[#3B82F6] text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Mon domaine
+        </button>
       </div>
 
       {error && (

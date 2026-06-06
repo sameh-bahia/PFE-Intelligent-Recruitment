@@ -1,10 +1,13 @@
 package com.AppRecrutement.AppRecrutement.controller;
 
+import com.AppRecrutement.AppRecrutement.model.Candidat;
 import com.AppRecrutement.AppRecrutement.model.Competence;
 import com.AppRecrutement.AppRecrutement.model.Offre;
 import com.AppRecrutement.AppRecrutement.model.Recruteur;
 import com.AppRecrutement.AppRecrutement.model.TypeContrat;
+import com.AppRecrutement.AppRecrutement.repository.CandidatRepository;
 import com.AppRecrutement.AppRecrutement.repository.CompetenceRepository;
+import com.AppRecrutement.AppRecrutement.repository.OffreRepository;
 import com.AppRecrutement.AppRecrutement.repository.RecruteurRepository;
 import com.AppRecrutement.AppRecrutement.service.OffreService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +30,12 @@ public class OffreController {
     @Autowired
     private CompetenceRepository competenceRepository;
 
+    @Autowired
+    private CandidatRepository candidatRepository;
+
+    @Autowired
+    private OffreRepository offreRepository;
+
     /**
      * Récupère toutes les offres d'emploi.
      * @return Liste de toutes les offres
@@ -34,6 +43,21 @@ public class OffreController {
     @GetMapping
     public List<Offre> getAllOffres() {
         return offreService.findAll();
+    }
+
+    /**
+     * Récupère les offres filtrées par domaine du candidat connecté.
+     * @param authentication Authentification JWT du candidat connecté
+     * @return Liste des offres du domaine du candidat
+     */
+    @GetMapping("/par-domaine")
+    public List<Offre> getOffresParDomaine(Authentication authentication) {
+        String email = authentication.getName();
+        Candidat candidat = candidatRepository.findByEmail(email);
+        if (candidat == null || candidat.getDomaine() == null) {
+            return offreService.findAll();
+        }
+        return offreRepository.findByDomaine(candidat.getDomaine());
     }
 
     /**
@@ -88,6 +112,7 @@ public class OffreController {
         
         offre.setSalaire((String) payload.get("salaire"));
         offre.setLieu((String) payload.get("lieu"));
+        offre.setDomaine((String) payload.get("domaine"));
         offre.setRecruteur(recruteur);
         offre.setEstOuverte(true);
 

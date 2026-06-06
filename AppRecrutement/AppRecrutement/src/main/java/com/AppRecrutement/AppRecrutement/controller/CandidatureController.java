@@ -118,7 +118,7 @@ public class CandidatureController {
      * @return Résultat du matching (score, compétences communes, compétences manquantes)
      */
     @GetMapping("/calculate-score/{offreId}")
-    public ResponseEntity<MatchingResultDTO> calculateScore(@PathVariable Long offreId, Authentication authentication) {
+    public ResponseEntity<?> calculateScore(@PathVariable Long offreId, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new RuntimeException("Utilisateur non authentifié");
         }
@@ -127,6 +127,11 @@ public class CandidatureController {
         Candidat candidat = candidatRepository.findByEmail(email);
         if (candidat == null) {
             throw new RuntimeException("Candidat non trouvé");
+        }
+
+        // Vérifier si le candidat a un CV
+        if (candidat.getCv() == null) {
+            return ResponseEntity.badRequest().body("Vous devez d'abord créer votre CV avant de voir votre score de matching.");
         }
 
         offreService.findById(offreId)

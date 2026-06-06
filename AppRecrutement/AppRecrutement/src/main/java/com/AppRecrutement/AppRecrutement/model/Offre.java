@@ -37,6 +37,10 @@ public class Offre {
     private Double salaireMin;
     private Double salaireMax;
 
+    // Domaine de l'offre (ex: IT, Santé, Finance, Industrie, Commerce, Education, Autre)
+    @Column(length = 50)
+    private String domaine;
+
     @ManyToOne
     @JoinColumn(name = "recruteur_id")
     private Recruteur recruteur;
@@ -137,6 +141,14 @@ public class Offre {
 
     public void setSalaireMax(Double salaireMax) {
         this.salaireMax = salaireMax;
+    }
+
+    public String getDomaine() {
+        return domaine;
+    }
+
+    public void setDomaine(String domaine) {
+        this.domaine = domaine;
     }
 
     public Recruteur getRecruteur() {

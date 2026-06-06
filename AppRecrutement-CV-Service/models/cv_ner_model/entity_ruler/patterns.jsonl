@@ -1,0 +1,103 @@
+{"label":"COMPETENCE","pattern":[{"LOWER":"java"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"python"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"spring"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"spring boot"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"hibernate"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"django"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"flask"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"react"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"angular"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"javascript"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"sql"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"postgresql"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"mysql"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"mongodb"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"docker"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"kubernetes"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"k8s"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"git"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"ci/cd"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"devops"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"c#"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":".net"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"asp.net"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"azure"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"aws"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"gcp"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"microservices"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"rest"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"graphql"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"agile"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"scrum"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"kanban"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"jira"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"trello"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"confluence"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"machine learning"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"deep learning"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"tensorflow"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"pytorch"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"keras"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"pandas"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"numpy"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"tableau"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"power bi"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"excel"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"figma"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"sketch"}]}
+{"label":"COMPETENCE","pattern":[{"LOWER":"adobe xd"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"d\u00e9veloppeur"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"developer"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"software engineer"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"data scientist"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"data analyst"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"machine learning engineer"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"architecte logiciel"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"software architect"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"chef de projet"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"project manager"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"product manager"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"ux designer"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"ui designer"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"full stack"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"frontend"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"backend"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"devops"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"ing\u00e9nieur"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"engineer"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"analyste"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"analyst"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"consultant"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"consultant"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"senior"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"junior"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"lead"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"manager"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"directeur"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"director"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"stagiaire"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"intern"}]}
+{"label":"EXPERIENCE","pattern":[{"LOWER":"freelance"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"master"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"licence"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"bachelor"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"phd"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"doctorat"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"ing\u00e9nieur"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"engineer"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"dipl\u00f4me"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"diploma"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"certificat"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"certificate"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"dut"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"iut"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"mba"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"msc"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"bsc"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"bootcamp"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"formation"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"education"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"universit\u00e9"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"university"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"\u00e9cole"}]}
+{"label":"FORMATION","pattern":[{"LOWER":"school"}]}

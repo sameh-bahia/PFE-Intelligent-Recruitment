@@ -51,6 +51,29 @@ public class CandidatController {
     }
 
     /**
+     * Supprime tous les candidats du domaine Santé.
+     * @return Message de confirmation
+     */
+    @DeleteMapping("/delete-sante")
+    public ResponseEntity<String> deleteCandidatsSante() {
+        List<Candidat> candidatsSante = candidatRepository.findByDomaineContainingIgnoreCase("santé");
+        int count = candidatsSante.size();
+        
+        for (Candidat candidat : candidatsSante) {
+            // Supprimer les expériences, formations, compétences et CV associés
+            experienceRepository.deleteByCandidatId(candidat.getId());
+            formationRepository.deleteByCandidatId(candidat.getId());
+            competenceRepository.deleteByCandidatId(candidat.getId());
+            if (candidat.getCv() != null) {
+                cvRepository.deleteById(candidat.getCv().getId());
+            }
+            candidatRepository.deleteById(candidat.getId());
+        }
+        
+        return ResponseEntity.ok(count + " candidat(s) du domaine Santé supprimé(s)");
+    }
+
+    /**
      * Récupère un candidat par son ID.
      * @param id Identifiant du candidat
      * @return Candidat trouvé ou 404 si non trouvé

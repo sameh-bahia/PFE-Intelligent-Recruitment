@@ -11,6 +11,7 @@ export default function CreerOffre() {
     typeContrat: '',
     salaire: '',
     lieu: '',
+    domaine: '',
     competences: ''
   });
   const [error, setError] = useState('');
@@ -147,6 +148,29 @@ export default function CreerOffre() {
               onChange={handleChange}
               className="w-full px-5 py-4 h-14 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
             />
+          </div>
+
+          <div>
+            <label htmlFor="domaine" className="block text-lg font-semibold text-[#1E293B] mb-3">
+              Domaine
+            </label>
+            <select
+              id="domaine"
+              name="domaine"
+              required
+              value={formData.domaine}
+              onChange={handleChange}
+              className="w-full px-5 py-4 h-14 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
+            >
+              <option value="">Sélectionner...</option>
+              <option value="IT">IT</option>
+              <option value="Santé">Santé</option>
+              <option value="Finance">Finance</option>
+              <option value="Industrie">Industrie</option>
+              <option value="Commerce">Commerce</option>
+              <option value="Education">Education</option>
+              <option value="Autre">Autre</option>
+            </select>
           </div>
 
           <div>

@@ -13,4 +13,5 @@ public interface OffreRepository extends JpaRepository<Offre, Long> {
     List<Offre> findByTypeContrat(TypeContrat typeContrat);
     List<Offre> findByEstOuverteTrue();
     List<Offre> findByLieuContaining(String lieu);
+    List<Offre> findByDomaine(String domaine);
 }

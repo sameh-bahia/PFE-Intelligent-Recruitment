@@ -27,6 +27,9 @@ public class Candidat extends Utilisateur {
     /** Titre professionnel ou profil du candidat (ex: Développeur Full Stack) */
     private String titreProfil;
 
+    /** Domaine du candidat (ex: IT, Santé, Finance, Industrie, Commerce, Education, Autre) */
+    private String domaine;
+
     /** Liste des expériences professionnelles du candidat */
     @OneToMany(mappedBy = "candidat", cascade = CascadeType.ALL)
     private List<Experience> experiences;
@@ -135,6 +138,14 @@ public class Candidat extends Utilisateur {
 
     public void setTitreProfil(String titreProfil) {
         this.titreProfil = titreProfil;
+    }
+
+    public String getDomaine() {
+        return domaine;
+    }
+
+    public void setDomaine(String domaine) {
+        this.domaine = domaine;
     }
 
     public List<Experience> getExperiences() {
