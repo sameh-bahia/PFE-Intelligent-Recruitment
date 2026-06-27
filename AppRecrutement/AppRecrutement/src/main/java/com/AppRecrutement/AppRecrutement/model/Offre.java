@@ -3,14 +3,25 @@ package com.AppRecrutement.AppRecrutement.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
 public class Offre {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    // Date de création de l'offre
+    @Column(name = "date_creation")
+    private LocalDateTime dateCreation = LocalDateTime.now();
 
     // Titre limité à 200 caractères (suffisant pour un titre d'offre)
     @Column(nullable = false, length = 200)
@@ -24,12 +35,9 @@ public class Offre {
     @Column(nullable = false, length = 200)
     private String lieu;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private TypeContrat typeContrat;
 
     @Column(nullable = false)
-    private Boolean estOuverte;
+    private Boolean estOuverte = true;
 
     // Salaire limité à 100 caractères (ex: "3000€ - 4500€")
     @Column(length = 100)
@@ -37,141 +45,53 @@ public class Offre {
     private Double salaireMin;
     private Double salaireMax;
 
-    // Domaine de l'offre (ex: IT, Santé, Finance, Industrie, Commerce, Education, Autre)
-    @Column(length = 50)
-    private String domaine;
+    // Domaine de l'offre (forcé à IT)
+    @Column(length = 50, nullable = false)
+    private String domaine = "IT";
 
-    @ManyToOne
+    // Type d'offre (EMPLOI, STAGE, ALTERNANCE, FREELANCE)
+    @Enumerated(EnumType.STRING)
+    private TypeOffre typeOffre;
+
+    // Sous-domaine IT (DEVELOPPEMENT, DATA_SCIENCE, DEVOPS, CYBERSECURITE, GESTION_PROJET, QA)
+    @Enumerated(EnumType.STRING)
+    private SousDomaineIT sousDomaineIT;
+
+    // Niveau d'étude requis pour l'offre
+    @Enumerated(EnumType.STRING)
+    private NiveauEtude niveauEtudeRequis;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recruteur_id")
     private Recruteur recruteur;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "offre", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "offre", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Candidature> candidatures;
 
     @JsonIgnoreProperties("offres")
-    @ManyToMany(mappedBy = "offres")
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(
+        name = "offre_competence",
+        joinColumns = @JoinColumn(name = "offre_id"),
+        inverseJoinColumns = @JoinColumn(name = "competence_id")
+    )
     private List<Competence> competences;
 
-    public Offre() {
-        this.estOuverte = true;
-    }
-
-    public Offre(String titre, String description, String lieu, TypeContrat typeContrat, Double salaireMin, Double salaireMax) {
+    public Offre(String titre, String description, String lieu, TypeOffre typeOffre, SousDomaineIT sousDomaineIT, Double salaireMin, Double salaireMax, NiveauEtude niveauEtudeRequis) {
         this.titre = titre;
         this.description = description;
         this.lieu = lieu;
-        this.typeContrat = typeContrat;
+        this.typeOffre = typeOffre;
+        this.sousDomaineIT = sousDomaineIT;
         this.salaireMin = salaireMin;
         this.salaireMax = salaireMax;
+        this.niveauEtudeRequis = niveauEtudeRequis;
         this.estOuverte = true;
+        this.domaine = "IT";
     }
 
     public void fermerOffre() {
         this.estOuverte = false;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTitre() {
-        return titre;
-    }
-
-    public void setTitre(String titre) {
-        this.titre = titre;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getLieu() {
-        return lieu;
-    }
-
-    public void setLieu(String lieu) {
-        this.lieu = lieu;
-    }
-
-    public TypeContrat getTypeContrat() {
-        return typeContrat;
-    }
-
-    public void setTypeContrat(TypeContrat typeContrat) {
-        this.typeContrat = typeContrat;
-    }
-
-    public Boolean getEstOuverte() {
-        return estOuverte;
-    }
-
-    public void setEstOuverte(Boolean estOuverte) {
-        this.estOuverte = estOuverte;
-    }
-
-    public String getSalaire() {
-        return salaire;
-    }
-
-    public void setSalaire(String salaire) {
-        this.salaire = salaire;
-    }
-
-    public Double getSalaireMin() {
-        return salaireMin;
-    }
-
-    public void setSalaireMin(Double salaireMin) {
-        this.salaireMin = salaireMin;
-    }
-
-    public Double getSalaireMax() {
-        return salaireMax;
-    }
-
-    public void setSalaireMax(Double salaireMax) {
-        this.salaireMax = salaireMax;
-    }
-
-    public String getDomaine() {
-        return domaine;
-    }
-
-    public void setDomaine(String domaine) {
-        this.domaine = domaine;
-    }
-
-    public Recruteur getRecruteur() {
-        return recruteur;
-    }
-
-    public void setRecruteur(Recruteur recruteur) {
-        this.recruteur = recruteur;
-    }
-
-    public List<Candidature> getCandidatures() {
-        return candidatures;
-    }
-
-    public void setCandidatures(List<Candidature> candidatures) {
-        this.candidatures = candidatures;
-    }
-
-    public List<Competence> getCompetences() {
-        return competences;
-    }
-
-    public void setCompetences(List<Competence> competences) {
-        this.competences = competences;
     }
 }

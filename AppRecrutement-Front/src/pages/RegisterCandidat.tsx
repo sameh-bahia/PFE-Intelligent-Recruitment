@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Logo from '@/components/Logo';
-import { Mail, Lock, User, MapPin, Calendar, Check, X, Eye, EyeOff, Briefcase, Brain, Clock, Target, Phone } from 'lucide-react';
+import { Mail, Lock, User, MapPin, Calendar, Check, X, Eye, EyeOff, Briefcase, Brain, Clock, Target } from 'lucide-react';
 import api from '@/lib/api';
 
 export default function RegisterCandidat() {
@@ -13,8 +13,7 @@ export default function RegisterCandidat() {
     telephone: '',
     adresse: '',
     dateNaissance: '',
-    titreProfil: '',
-    domaine: ''
+    titreProfil: ''
   });
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -67,9 +66,10 @@ export default function RegisterCandidat() {
         error = isValid ? '' : 'Minimum 2 caractères';
         break;
       case 'telephone':
-        const phoneRegex = /^\+216\d{8}$/;
-        isValid = phoneRegex.test(value);
-        error = isValid ? '' : 'Numéro tunisien invalide (format: +216 XX XXX XXX)';
+        // User types only the 8 digits, +216 is added separately
+        const digitsOnly = value.replace(/\D/g, '');
+        isValid = digitsOnly.length === 8;
+        error = isValid ? '' : 'Numéro invalide (8 chiffres requis)';
         break;
       case 'titreProfil':
         isValid = value.trim().length >= 2;
@@ -99,7 +99,7 @@ export default function RegisterCandidat() {
   };
 
   const isFormValid = () => {
-    const requiredFields = ['email', 'motDePasse', 'nom', 'prenom', 'telephone', 'titreProfil', 'domaine'];
+    const requiredFields = ['email', 'motDePasse', 'nom', 'prenom', 'telephone', 'titreProfil'];
     return requiredFields.every(field => fieldValidities[field] && formData[field as keyof typeof formData]);
   };
 
@@ -259,6 +259,7 @@ export default function RegisterCandidat() {
                     id="email"
                     name="email"
                     type="email"
+                    autoComplete="off"
                     required
                     value={formData.email}
                     onChange={handleChange}
@@ -293,6 +294,7 @@ export default function RegisterCandidat() {
                     id="motDePasse"
                     name="motDePasse"
                     type={showPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
                     required
                     value={formData.motDePasse}
                     onChange={handleChange}
@@ -332,8 +334,10 @@ export default function RegisterCandidat() {
                 <label htmlFor="telephone" className="block text-lg font-semibold text-[#1E293B] mb-3">
                   Téléphone
                 </label>
-                <div className="relative">
-                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <div className="relative flex">
+                  <span className="inline-flex items-center px-4 py-3 h-12 bg-gray-100 border-2 border-r-0 border-gray-200 rounded-l-xl text-gray-600 font-medium text-lg">
+                    +216
+                  </span>
                   <input
                     id="telephone"
                     name="telephone"
@@ -341,14 +345,15 @@ export default function RegisterCandidat() {
                     required
                     value={formData.telephone}
                     onChange={handleChange}
-                    className={`w-full pl-12 pr-4 py-3 h-12 bg-white border-2 rounded-xl focus:outline-none transition-all text-lg ${
+                    maxLength={11}
+                    className={`flex-1 pl-4 pr-4 py-3 h-12 bg-white border-2 rounded-r-xl focus:outline-none transition-all text-lg ${
                       touchedFields.telephone 
                         ? fieldValidities.telephone 
                           ? 'border-green-500' 
                           : 'border-red-500'
                         : 'border-gray-200 focus:border-blue-500'
                     }`}
-                    placeholder="+216 XX XXX XXX"
+                    placeholder="XX XXX XXX"
                   />
                   {touchedFields.telephone && fieldValidities.telephone && (
                     <Check className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
@@ -431,30 +436,6 @@ export default function RegisterCandidat() {
                 )}
               </div>
 
-              <div>
-                <label htmlFor="domaine" className="block text-lg font-semibold text-[#1E293B] mb-3">
-                  Domaine
-                </label>
-                <div className="relative">
-                  <select
-                    id="domaine"
-                    name="domaine"
-                    required
-                    value={formData.domaine}
-                    onChange={handleChange}
-                    className="w-full px-5 py-3 h-12 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-all text-lg"
-                  >
-                    <option value="">Sélectionner...</option>
-                    <option value="IT">IT</option>
-                    <option value="Santé">Santé</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Industrie">Industrie</option>
-                    <option value="Commerce">Commerce</option>
-                    <option value="Education">Education</option>
-                    <option value="Autre">Autre</option>
-                  </select>
-                </div>
-              </div>
 
               <button
                 type="submit"

@@ -140,11 +140,12 @@ async def health_check():
 # ============================================================
 # POINT D'ENTRÉE PRINCIPAL
 # Exécuté quand on lance le fichier directement avec: python main.py
-# Démarre le serveur Uvicorn sur le port 8000
+# Démarre le serveur Uvicorn sur le port 8001
 # ============================================================
 if __name__ == "__main__":
     import uvicorn  # Import de uvicorn pour le serveur
     # Démarrage du serveur :
     # - host="0.0.0.0" : Écoute sur toutes les interfaces réseau
-    # - port=8000 : Port d'écoute HTTP
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # - port=8001 : Port d'écoute HTTP
+    print("Démarrage du serveur sur le port 8001...")
+    uvicorn.run(app, host="0.0.0.0", port=8001)

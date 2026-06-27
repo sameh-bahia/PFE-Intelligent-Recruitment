@@ -2,10 +2,16 @@ package com.AppRecrutement.AppRecrutement.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import java.util.Date;
 import java.util.List;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
 public class Candidature {
 
     @Id
@@ -23,11 +29,15 @@ public class Candidature {
     @Column(nullable = false)
     private StatutCandidature statut;
 
-    @ManyToOne
+    private Date dateEntretien;
+    private String typeEntretien; // "EN_LIGNE" ou "PRESENTIEL"
+    private String lienEntretien; // Google Meet link ou adresse
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "candidat_id")
     private Candidat candidat;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "offre_id")
     private Offre offre;
 
@@ -45,69 +55,5 @@ public class Candidature {
     }
 
     public void envoyerNotification() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Date getDatePostulation() {
-        return datePostulation;
-    }
-
-    public void setDatePostulation(Date datePostulation) {
-        this.datePostulation = datePostulation;
-    }
-
-    public String getLettreMotivation() {
-        return lettreMotivation;
-    }
-
-    public void setLettreMotivation(String lettreMotivation) {
-        this.lettreMotivation = lettreMotivation;
-    }
-
-    public Double getScoreCompatibilite() {
-        return scoreCompatibilite;
-    }
-
-    public void setScoreCompatibilite(Double scoreCompatibilite) {
-        this.scoreCompatibilite = scoreCompatibilite;
-    }
-
-    public StatutCandidature getStatut() {
-        return statut;
-    }
-
-    public void setStatut(StatutCandidature statut) {
-        this.statut = statut;
-    }
-
-    public Candidat getCandidat() {
-        return candidat;
-    }
-
-    public void setCandidat(Candidat candidat) {
-        this.candidat = candidat;
-    }
-
-    public Offre getOffre() {
-        return offre;
-    }
-
-    public void setOffre(Offre offre) {
-        this.offre = offre;
-    }
-
-    public List<Recommandation> getRecommandations() {
-        return recommandations;
-    }
-
-    public void setRecommandations(List<Recommandation> recommandations) {
-        this.recommandations = recommandations;
     }
 }

@@ -8,10 +8,12 @@ interface Offre {
   id: number;
   titre: string;
   description: string;
-  typeContrat: string;
+  typeOffre: string;
+  sousDomaineIT: string;
+  niveauEtudeRequis: string;
   salaire: string;
   lieu: string;
-  datePublication: string;
+  dateCreation: string;
   statut?: string;
   candidats?: number;
   competences?: Array<{ nom: string; categorie: string }>;
@@ -174,7 +176,10 @@ export default function ListeOffres() {
                   Titre
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Type de contrat
+                  Type d'offre
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Sous-domaine
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Salaire
@@ -192,7 +197,7 @@ export default function ListeOffres() {
                   Candidats
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Date de publication
+                  Date de création
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Actions
@@ -206,7 +211,10 @@ export default function ListeOffres() {
                     {offre.titre}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {offre.typeContrat}
+                    {offre.typeOffre}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {offre.sousDomaineIT}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     {offre.salaire}
@@ -234,7 +242,7 @@ export default function ListeOffres() {
                     {offre.candidats || 0}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {formatDate(offre.datePublication)}
+                    {formatDate(offre.dateCreation)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-3">

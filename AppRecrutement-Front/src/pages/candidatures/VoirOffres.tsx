@@ -12,12 +12,15 @@ export default function VoirOffres() {
   const [matchingResult, setMatchingResult] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
   const [calculatingScore, setCalculatingScore] = useState(false);
-  const [filterMode, setFilterMode] = useState<'all' | 'domain'>('all');
+  const [filterMode, setFilterMode] = useState<'all' | 'stage'>('all');
 
   useEffect(() => {
     const fetchOffres = async () => {
       try {
-        const endpoint = filterMode === 'domain' ? '/offres/par-domaine' : '/offres';
+        let endpoint = '/offres';
+        if (filterMode === 'stage') {
+          endpoint = '/offres/type/STAGE';
+        }
         const response = await api.get(endpoint);
         setOffres(response.data);
         setLoading(false);
@@ -74,14 +77,14 @@ export default function VoirOffres() {
           Toutes les offres
         </button>
         <button
-          onClick={() => setFilterMode('domain')}
+          onClick={() => setFilterMode('stage')}
           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            filterMode === 'domain'
+            filterMode === 'stage'
               ? 'bg-[#3B82F6] text-white'
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >
-          Mon domaine
+          Stages uniquement
         </button>
       </div>
 
@@ -111,7 +114,7 @@ export default function VoirOffres() {
                   <div className="flex flex-wrap gap-3 mb-4">
                     <span className="px-3 py-1.5 bg-[#3B82F6]/10 text-[#3B82F6] rounded-full text-sm font-medium flex items-center gap-1">
                       <Briefcase className="w-4 h-4" />
-                      {offre.typeContrat}
+                      {offre.typeOffre}
                     </span>
                     <span className="px-3 py-1.5 bg-[#10B981]/10 text-[#10B981] rounded-full text-sm font-medium flex items-center gap-1">
                       <DollarSign className="w-4 h-4" />

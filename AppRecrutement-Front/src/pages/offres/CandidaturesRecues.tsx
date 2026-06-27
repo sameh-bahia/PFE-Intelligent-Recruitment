@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Briefcase, Check, X, User, Lock, Unlock } from 'lucide-react';
+import { Users, Briefcase, Check, X, User, Lock, Unlock, Eye } from 'lucide-react';
 import api from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
 
@@ -19,10 +19,12 @@ interface Candidature {
     id: number;
     nom: string;
     email: string;
+    cvId?: number;
   };
   statut: string;
   dateCandidature: string;
   scoreCompatibilite?: number;
+  scoreRelatif?: number;
 }
 
 interface GroupedCandidatures {
@@ -34,6 +36,11 @@ export default function CandidaturesRecues() {
   const [candidatures, setCandidatures] = useState<Candidature[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showAcceptModal, setShowAcceptModal] = useState(false);
+  const [selectedCandidature, setSelectedCandidature] = useState<Candidature | null>(null);
+  const [interviewDate, setInterviewDate] = useState('');
+  const [interviewType, setInterviewType] = useState<'EN_LIGNE' | 'PRESENTIEL'>('EN_LIGNE');
+  const [interviewLink, setInterviewLink] = useState('');
 
   useEffect(() => {
     fetchCandidatures();
@@ -58,11 +65,31 @@ export default function CandidaturesRecues() {
   // Problème résolu: Le frontend envoyait 'ACCEPTÉE' et 'REFUSÉE' (avec accents)
   // mais l'enum backend utilise 'ACCEPTEE' et 'REFUSEE' (sans accents)
   const handleAccept = async (id: number) => {
+    const candidature = candidatures.find(c => c.id === id);
+    if (candidature) {
+      setSelectedCandidature(candidature);
+      setShowAcceptModal(true);
+    }
+  };
+
+  const handleConfirmAccept = async () => {
+    if (!selectedCandidature) return;
+
     try {
-      await api.put(`/candidatures/${id}/statut`, { statut: 'ACCEPTEE' });
+      await api.put(`/candidatures/${selectedCandidature.id}/statut`, {
+        statut: 'ACCEPTEE',
+        dateEntretien: interviewDate,
+        typeEntretien: interviewType,
+        lienEntretien: interviewLink
+      });
       setCandidatures(candidatures.map(c =>
-        c.id === id ? { ...c, statut: 'ACCEPTEE' } : c
+        c.id === selectedCandidature.id ? { ...c, statut: 'ACCEPTEE' } : c
       ));
+      setShowAcceptModal(false);
+      setSelectedCandidature(null);
+      setInterviewDate('');
+      setInterviewType('EN_LIGNE');
+      setInterviewLink('');
     } catch (err) {
       setError('Erreur lors de l\'acceptation');
       console.error('Error accepting candidature:', err);
@@ -90,6 +117,20 @@ export default function CandidaturesRecues() {
     } catch (err) {
       setError('Erreur lors de la modification du statut de l\'offre');
       console.error('Error closing offre:', err);
+    }
+  };
+
+  const handleViewCV = async (cvId: number) => {
+    try {
+      const response = await api.get(`/cvs/download/${cvId}`, {
+        responseType: 'blob'
+      });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } catch (err) {
+      setError('Erreur lors de l\'ouverture du CV');
+      console.error('Error viewing CV:', err);
     }
   };
 
@@ -307,7 +348,23 @@ export default function CandidaturesRecues() {
                           </div>
                         </td>
                         <td className="w-32 px-6 py-4 whitespace-nowrap text-sm">
-                          {candidature.scoreCompatibilite !== null && candidature.scoreCompatibilite !== undefined ? (
+                          {candidature.scoreRelatif !== null && candidature.scoreRelatif !== undefined ? (
+                            <div className="flex items-center gap-3">
+                              <div className="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                                <div
+                                  className="h-2.5 rounded-full transition-all duration-300"
+                                  style={{
+                                    width: `${(candidature.scoreRelatif * 100).toFixed(0)}%`,
+                                    background: getScoreGradient(candidature.scoreRelatif),
+                                    boxShadow: `0 0 8px ${getScoreShadowColor(candidature.scoreRelatif)}`
+                                  }}
+                                ></div>
+                              </div>
+                              <span className="font-semibold text-sm" style={{ color: getScoreShadowColor(candidature.scoreRelatif).replace('0.5)', '1)') }}>
+                                {(candidature.scoreRelatif * 100).toFixed(0)}%
+                              </span>
+                            </div>
+                          ) : candidature.scoreCompatibilite !== null && candidature.scoreCompatibilite !== undefined ? (
                             <div className="flex items-center gap-3">
                               <div className="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
                                 <div
@@ -335,6 +392,15 @@ export default function CandidaturesRecues() {
                         </td>
                         <td className="w-32 px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
+                            {candidature.candidat.cvId && (
+                              <button
+                                onClick={() => handleViewCV(candidature.candidat.cvId)}
+                                className="text-[#3B82F6] hover:text-[#2563EB] transition-colors"
+                                title="Voir le CV"
+                              >
+                                <Eye className="w-5 h-5" />
+                              </button>
+                            )}
                             {candidature.statut !== 'ACCEPTEE' && (
                               <button
                                 onClick={() => handleAccept(candidature.id)}
@@ -362,6 +428,84 @@ export default function CandidaturesRecues() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Modal d'acceptation avec détails d'entretien */}
+      {showAcceptModal && selectedCandidature && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
+            <h2 className="text-xl font-bold text-[#1E293B] mb-4">
+              Accepter la candidature de {selectedCandidature.candidat.nom}
+            </h2>
+            <p className="text-gray-600 mb-4">
+              Veuillez renseigner les détails de l'entretien pour le poste de <strong>{selectedCandidature.offre.titre}</strong>
+            </p>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Date et heure de l'entretien *
+                </label>
+                <input
+                  type="datetime-local"
+                  value={interviewDate}
+                  onChange={(e) => setInterviewDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Type d'entretien *
+                </label>
+                <select
+                  value={interviewType}
+                  onChange={(e) => setInterviewType(e.target.value as 'EN_LIGNE' | 'PRESENTIEL')}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
+                >
+                  <option value="EN_LIGNE">En ligne (visioconférence)</option>
+                  <option value="PRESENTIEL">Présentiel</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {interviewType === 'EN_LIGNE' ? 'Lien Google Meet *' : 'Adresse de la société *'}
+                </label>
+                <input
+                  type="text"
+                  value={interviewLink}
+                  onChange={(e) => setInterviewLink(e.target.value)}
+                  placeholder={interviewType === 'EN_LIGNE' ? 'https://meet.google.com/...' : '123 Rue Example, Ville'}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowAcceptModal(false);
+                  setSelectedCandidature(null);
+                  setInterviewDate('');
+                  setInterviewType('EN_LIGNE');
+                  setInterviewLink('');
+                }}
+                className="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleConfirmAccept}
+                className="px-4 py-2 bg-[#10B981] text-white rounded-lg hover:bg-[#059669] font-medium"
+              >
+                Confirmer et envoyer l'email
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </MainLayout>

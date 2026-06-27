@@ -192,74 +192,90 @@ def extract_cv_sections(text: str) -> Dict[str, str]:
     print(f"[DEBUG] ===== EXTRACT CV SECTIONS =====")
     print(f"[DEBUG] Longueur du texte complet: {len(text)}")
     
-    # Trouver la position de "PROFESSIONAL EXPERIENCE" / "Expérience professionnelle", "EDUCATION" / "Formation" et "COMPÉTENCES CLÉS"
-    experience_match = re.search(r'(PROFESSIONAL EXPERIENCE|Expérience professionnelle|Expérience|Work Experience|EXPERIENCE)', text, re.IGNORECASE)
-    education_match = re.search(r'(EDUCATION|Formation|Education|Éducation|Diplômes|Diplomes)', text, re.IGNORECASE)
-    competences_match = re.search(r'(COMPÉTENCES CLÉS|COMPETENCES CLES|Compétences|Skills)', text, re.IGNORECASE)
+    # Trouver toutes les sections avec leurs positions
+    # Patterns avec support des accents et caractères spéciaux
+    section_patterns = [
+        # Expériences
+        (r'EXPÉRIENCES?\s+PROFESSIONNELLES?', 'experiences'),  # EXPÉRIENCES PROFESSIONNELLES
+        (r'EXPÉRIENCE\s+PROFESSIONNELLE', 'experiences'),  # EXPÉRIENCE PROFESSIONNELLE
+        (r'EXPÉRIENCE\s+&\s+PROJETS', 'experiences'),  # EXPÉRIENCE & PROJETS
+        (r'EXPÉRIENCES?\s+&\s+STAGES', 'experiences'),  # EXPÉRIENCES & STAGES
+        (r'EXPÉRIENCE', 'experiences'),  # EXPÉRIENCE (fallback)
+        (r'PROJETS?\s+ACADÉMIQUES?', 'experiences'),  # PROJETS ACADÉMIQUES
+        # Formations
+        (r'FORMATION\s+&\s+DIPLÔMES', 'formations'),  # FORMATION & DIPLÔMES
+        (r'FORMATION\s+ET\s+DIPLOMES', 'formations'),  # FORMATION ET DIPLOMES
+        (r'FORMATION\s+ACADÉMIQUE', 'formations'),  # FORMATION ACADÉMIQUE
+        (r'EDUCATION', 'formations'),  # EDUCATION
+        (r'CURSUS', 'formations'),  # CURSUS
+        (r'FORMATION', 'formations'),  # FORMATION (fallback - doit être après les plus spécifiques)
+        # Compétences
+        (r'COMPÉTENCES\s+TECHNIQUES', 'competences'),  # COMPÉTENCES TECHNIQUES
+        (r'COMPETENCES\s+CLES', 'competences'),  # COMPETENCES CLES
+        (r'COMPÉTENCES', 'competences'),  # COMPÉTENCES (fallback)
+        (r'LANGUES\s+&\s+SOFT\s+SKILLS', 'competences'),  # LANGUES & SOFT SKILLS
+        (r'LANGUES', 'competences'),  # LANGUES
+    ]
     
-    # Afficher le contexte autour de PROFESSIONAL EXPERIENCE
-    if experience_match:
-        start_context = max(0, experience_match.start() - 100)
-        end_context = min(len(text), experience_match.end() + 200)
-        print(f"[DEBUG] Contexte autour de PROFESSIONAL EXPERIENCE: '{text[start_context:end_context]}'")
+    sections_with_pos = []
     
-    print(f"[DEBUG] PROFESSIONAL EXPERIENCE trouvé: {experience_match is not None}")
-    print(f"[DEBUG] EDUCATION trouvé: {education_match is not None}")
-    print(f"[DEBUG] COMPÉTENCES CLÉS trouvé: {competences_match is not None}")
+    # Chercher les patterns dans le texte
+    for pattern, section_name in section_patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            # Vérifier si cette section n'est pas déjà trouvée (éviter les doublons)
+            already_found = any(pos[2] == section_name for pos in sections_with_pos)
+            if not already_found:
+                sections_with_pos.append((match.start(), match.end(), section_name))
+                print(f"[DEBUG] Section {section_name} trouvée à position {match.start()}: '{match.group(0)}'")
     
-    if experience_match and education_match:
-        # Extraire le texte entre PROFESSIONAL EXPERIENCE et EDUCATION
-        start_exp = experience_match.end()
-        end_exp = education_match.start()
-        print(f"[DEBUG] Position PROFESSIONAL EXPERIENCE end: {start_exp}")
-        print(f"[DEBUG] Position EDUCATION start: {end_exp}")
-        print(f"[DEBUG] Texte entre positions: '{text[start_exp:end_exp]}'")
-        sections["experiences"] = text[start_exp:end_exp].strip()
-        
-        # Extraire le texte après EDUCATION jusqu'à la fin
-        start_edu = education_match.end()
-        print(f"[DEBUG] Position EDUCATION end: {start_edu}")
-        sections["formations"] = text[start_edu:].strip()
-        
-        print(f"[DEBUG] Section expériences trouvée (PROFESSIONAL EXPERIENCE -> EDUCATION)")
-        print(f"[DEBUG] Section formations trouvée (EDUCATION -> fin)")
-        
-        # Exclure la section LANGUAGES de la section formations
-        if "LANGUAGES" in sections["formations"]:
-            sections["formations"] = sections["formations"].split("LANGUAGES")[0].strip()
-            print(f"[DEBUG] Section LANGUAGES exclue des formations")
-    elif experience_match:
-        # Seulement PROFESSIONAL EXPERIENCE trouvé
-        start_exp = experience_match.end()
-        sections["experiences"] = text[start_exp:].strip()
-        print(f"[DEBUG] Section expériences trouvée (PROFESSIONAL EXPERIENCE -> fin)")
-    elif education_match:
-        # Seulement EDUCATION trouvé
-        start_edu = education_match.end()
-        sections["formations"] = text[start_edu:].strip()
-        print(f"[DEBUG] Section formations trouvée (EDUCATION -> fin)")
-        
-        # Exclure la section LANGUAGES de la section formations
-        if "LANGUAGES" in sections["formations"]:
-            sections["formations"] = sections["formations"].split("LANGUAGES")[0].strip()
-            print(f"[DEBUG] Section LANGUAGES exclue des formations")
+    # Si aucune section trouvée avec les patterns spécifiques, essayer les patterns génériques
+    if not sections_with_pos:
+        generic_patterns = [
+            (r'EXPÉRIENCE|EXPERIENCE|WORK\s+EXPERIENCE', 'experiences'),
+            (r'EDUCATION|FORMATION|DIPLÔMES|DIPLOMES', 'formations'),
+            (r'COMPÉTENCES|COMPETENCES|SKILLS', 'competences')
+        ]
+        for pattern, section_name in generic_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                already_found = any(pos[2] == section_name for pos in sections_with_pos)
+                if not already_found:
+                    sections_with_pos.append((match.start(), match.end(), section_name))
+                    print(f"[DEBUG] Section {section_name} trouvée (générique) à position {match.start()}: '{match.group(0)}'")
     
-    # Exclure la section LANGUAGES de la section formations (cas général)
-    if "formations" in sections and "LANGUAGES" in sections["formations"]:
-        sections["formations"] = sections["formations"].split("LANGUAGES")[0].strip()
-        print(f"[DEBUG] Section LANGUAGES exclue des formations (cas général)")
+    # Trier par position de début
+    sections_with_pos.sort(key=lambda x: x[0])
     
-    # Extraire la section compétences si trouvée
-    if competences_match:
-        start_comp = competences_match.end()
-        # Trouver la fin de la section compétences (jusqu'à la prochaine section ou fin du texte)
-        next_section_match = re.search(r'(EXPÉRIENCES PROFESSIONNELLES|EXPERIENCES PROFESSIONNELLES|PROFIL|LANGUAGES)', text[start_comp:], re.IGNORECASE)
-        if next_section_match:
-            end_comp = start_comp + next_section_match.start()
+    print(f"[DEBUG] Sections trouvées: {[(pos[2], pos[0]) for pos in sections_with_pos]}")
+    
+    # Extraire le texte entre les sections
+    for i, (start, end, section_name) in enumerate(sections_with_pos):
+        # Trouver la fin de cette section (début de la section suivante ou fin du texte)
+        if i + 1 < len(sections_with_pos):
+            next_start = sections_with_pos[i + 1][0]
+            section_text = text[start:next_start].strip()
         else:
-            end_comp = len(text)
-        sections["competences"] = text[start_comp:end_comp].strip()
-        print(f"[DEBUG] Section compétences extraite: {len(sections['competences'])} caractères")
+            section_text = text[start:].strip()
+        
+        # Enlever le titre de section du début
+        # Gérer différents types de retours à la ligne (\n, \r\n, \r)
+        lines = re.split(r'\r?\n|\r', section_text)
+        if lines and len(lines) > 1:
+            # La première ligne est le titre, on la retire
+            section_text = '\n'.join(lines[1:]).strip()
+        elif lines and len(lines) == 1:
+            # Si une seule ligne, essayer d'enlever le pattern du titre
+            section_text = re.sub(r'^[A-ZÉÀÂÔÙ\s&\-]+(?:\r?\n|\r|$)', '', section_text, flags=re.IGNORECASE).strip()
+        
+        sections[section_name] = section_text
+        print(f"[DEBUG] Section {section_name} extraite: {len(section_text)} caractères")
+        print(f"[DEBUG] Section {section_name} PREMIERES 200 CARACTERES: {section_text[:200]}")
+        
+        # Exclure la section LANGUAGES de la section formations
+        if section_name == 'formations' and "LANGUAGES" in section_text:
+            sections["formations"] = section_text.split("LANGUAGES")[0].strip()
+            print(f"[DEBUG] Section LANGUAGES exclue des formations")
     
     print(f"[DEBUG] Longueur section expériences: {len(sections['experiences'])}")
     print(f"[DEBUG] Longueur section formations: {len(sections['formations'])}")
@@ -270,7 +286,8 @@ def extract_cv_sections(text: str) -> Dict[str, str]:
 
 def parse_experiences(experience_text: str) -> List[Dict]:
     """
-    Parse la section expériences pour extraire les expériences complètes.
+    Parse la section expériences pour extraire les expériences individuelles.
+    Détecte chaque expérience par la présence d'une date (YYYY-YYYY ou YYYY-Présent).
     
     Args:
         experience_text: Texte de la section expériences
@@ -279,118 +296,157 @@ def parse_experiences(experience_text: str) -> List[Dict]:
         Liste d'expériences avec titrePoste, entreprise, dateDebut, dateFin, description
     """
     print(f"[DEBUG] ===== PARSE EXPERIENCES =====")
-    print(f"[DEBUG] Longueur texte expériences: {len(experience_text)}")
+    print(f"[DEBUG] Longueur texte: {len(experience_text)}")
+    print(f"[DEBUG] Texte expériences à parser: {experience_text[:500]}...")
     
     if not experience_text:
-        print(f"[DEBUG] Texte expériences vide")
         return []
     
     experiences = []
     
-    print(f"[DEBUG] Texte expériences à parser: {experience_text[:200]}...")
+    # Fonction pour normaliser (comparaison sans accents)
+    def normalize(text):
+        text = text.upper()
+        text = text.replace('É', 'E').replace('È', 'E').replace('Ê', 'E')
+        text = text.replace('À', 'A').replace('Â', 'A')
+        text = text.replace('Ô', 'O').replace('Ù', 'U')
+        text = text.replace('(', ' ').replace(')', ' ')
+        text = text.replace('-', ' ').replace('—', ' ')
+        return ' '.join(text.split())
     
-    # Diviser le texte en blocs (séparés par des lignes vides ou des points •)
-    blocks = re.split(r'\n\s*\n|\n•\s*', experience_text)
+    # Titres de section à ignorer
+    section_patterns = [
+        'EXPERIENCES PROFESSIONNELLES', 'EXPERIENCE PROFESSIONNELLE',
+        'PROJETS ACADEMIQUES', 'FORMATION', 'COMPETENCES'
+    ]
     
-    # Si un seul bloc et qu'il contient des bullet points, utiliser une logique plus robuste
-    if len(blocks) == 1 and '-' in experience_text:
-        lines = experience_text.split('\n')
-        current_block = []
-        blocks = []
-        in_description = False
-        
-        for line in lines:
-            line = line.strip()
-            if not line:
-                continue
-            # Si la ligne commence par un tiret, c'est une description
-            if line.startswith('-'):
-                in_description = True
-                current_block.append(line)
-            # Si la ligne ne commence pas par un tiret et qu'on était dans une description
-            elif in_description and current_block:
-                # Sauvegarder le bloc actuel et commencer un nouveau
-                if len(current_block) >= 2:
-                    blocks.append('\n'.join(current_block))
-                current_block = [line]
-                in_description = False
-            else:
-                current_block.append(line)
-        
-        # Ajouter le dernier bloc
-        if current_block and len(current_block) >= 2:
-            blocks.append('\n'.join(current_block))
+    lines = experience_text.split('\n')
+    current_poste = None
+    current_entreprise = None
+    current_date_debut = None
+    current_date_fin = None
+    current_desc = ""
     
-    print(f"[DEBUG] Nombre de blocs expériences: {len(blocks)}")
-    
-    for i, block in enumerate(blocks):
-        block = block.strip()
-        print(f"[DEBUG] Bloc {i}: {block[:100]}...")
-        
-        if not block or len(block) < 10:
-            print(f"[DEBUG] Bloc {i} ignoré (vide ou trop court)")
+    for i, line in enumerate(lines):
+        line = line.strip()
+        if not line or len(line) < 3:
             continue
         
-        # Extraire l'expérience
-        experience = {
-            "titrePoste": "",
-            "entreprise": "",
-            "dateDebut": None,
-            "dateFin": None,
-            "description": ""
-        }
+        # Ignorer les titres de section
+        normalized = normalize(line)
+        is_section = any(pattern in normalized for pattern in section_patterns)
+        if is_section:
+            print(f"[DEBUG] Ignoré (titre): '{line[:50]}...'")
+            continue
         
-        # Extraire le titre du poste (première ligne)
-        lines = block.split('\n')
-        if lines:
-            # Première ligne: titre du poste
-            experience["titrePoste"] = lines[0].strip()
-            print(f"[DEBUG] Expérience - Titre: '{experience['titrePoste']}'")
+        # Vérifier si c'est une ligne avec date (indique un nouveau poste)
+        # Accepte: YYYY-YYYY, YYYY-Présent, Mois YYYY — Mois YYYY, Mois YYYY — Présent, DD/MM/YYYY - DD/MM/YYYY
+        year_match = re.search(
+            r'(\d{4}|(?:Janvier|Février|Mars|Avril|Mai|Juin|Juillet|Août|Septembre|Octobre|Novembre|Décembre)\s+\d{4}|\d{2}/\d{2}/\d{4})\s*[-—]\s*(\d{4}|Présent|Present|(?:Janvier|Février|Mars|Avril|Mai|Juin|Juillet|Août|Septembre|Octobre|Novembre|Décembre)\s+\d{4}|\d{2}/\d{2}/\d{4})',
+            line,
+            re.IGNORECASE
+        )
+        if year_match:
+            # Sauvegarder l'expérience précédente si complète
+            if current_poste:
+                exp = {
+                    "titrePoste": current_poste,
+                    "entreprise": current_entreprise or "",
+                    "dateDebut": current_date_debut,
+                    "dateFin": current_date_fin,
+                    "description": current_desc.strip()
+                }
+                print(f"[DEBUG] Expérience sauvegardée: {exp['titrePoste'][:40]}...")
+                experiences.append(exp)
             
-            # Deuxième ligne: entreprise et dates
-            if len(lines) > 1:
-                second_line = lines[1].strip()
-                print(f"[DEBUG] Expérience - Deuxième ligne: '{second_line}'")
-                # Extraire l'entreprise (avant le "|")
-                if '|' in second_line:
-                    parts = second_line.split('|')
-                    experience["entreprise"] = parts[0].strip()
-                    print(f"[DEBUG] Expérience - Entreprise: '{experience['entreprise']}'")
-                    # Extraire les dates (après le "|")
-                    date_match = re.search(r'(\d{4})\s*-\s*(\d{4}|Présent)', parts[1])
-                    if date_match:
-                        start_year = date_match.group(1)
-                        end_year = date_match.group(2)
-                        experience["dateDebut"] = f"{start_year}-01-01"
-                        if end_year == "Présent":
-                            experience["dateFin"] = None
-                        else:
-                            experience["dateFin"] = f"{end_year}-01-01"
+            # Réinitialiser pour la nouvelle expérience
+            current_desc = ""
+            
+            # Fonction pour extraire l'année d'une date (avec ou sans mois)
+            def extract_year(date_str):
+                date_str = date_str.strip()
+                # Si c'est juste une année
+                if re.match(r'^\d{4}$', date_str):
+                    return date_str
+                # Si c'est DD/MM/YYYY, extraire l'année
+                if re.match(r'^\d{2}/\d{2}/\d{4}$', date_str):
+                    parts = date_str.split('/')
+                    return parts[2]
+                # Si c'est "Mois Année", extraire l'année
+                year_match = re.search(r'\d{4}', date_str)
+                if year_match:
+                    return year_match.group(0)
+                return None
+            
+            start_date = extract_year(year_match.group(1))
+            end_date = extract_year(year_match.group(2))
+            
+            if start_date:
+                current_date_debut = f"{start_date}-01-01"
+            else:
+                current_date_debut = None
+            
+            if end_date and end_date.upper() not in ['PRÉSENT', 'PRESENT']:
+                current_date_fin = f"{end_date}-01-01"
+            else:
+                current_date_fin = None
+            
+            # Extraire le poste et potentiellement l'entreprise
+            line_without_date = line.replace(year_match.group(0), '').strip(' -—|')
+            
+            # Vérifier si la ligne originale contient "|" avant la date
+            line_before_date = line[:line.find(year_match.group(0))].strip()
+            
+            if '|' in line_before_date:
+                # Format: Poste | Entreprise | Date
+                parts = line_before_date.split('|')
+                current_poste = parts[0].strip()
+                current_entreprise = parts[1].strip() if len(parts) > 1 else None
+            else:
+                # Format: Poste Entreprise | Date
+                # Essayer de séparer intelligemment
+                parts = line_without_date.split()
+                if len(parts) >= 2:
+                    # Le dernier mot est probablement l'entreprise
+                    current_entreprise = parts[-1]
+                    current_poste = ' '.join(parts[:-1])
+                else:
+                    current_poste = line_without_date
+                    current_entreprise = None
+            
+            print(f"[DEBUG] Nouveau poste: '{current_poste[:40]}...'")
         
-        # Extraire les dates
-        date_pattern = r'(\d{4}\s*-\s*\d{4})'
-        date_match = re.search(date_pattern, block)
-        if date_match:
-            date_str = date_match.group(0)
-            normalized = normalize_date_range(date_str)
-            experience["dateDebut"] = normalized["dateDebut"]
-            experience["dateFin"] = normalized["dateFin"]
+        # Ligne entreprise (si on a un poste mais pas encore d'entreprise)
+        elif current_poste and not current_entreprise and len(line) < 60:
+            if not line.startswith('-') and not line.startswith('•'):
+                current_entreprise = line
+                print(f"[DEBUG] Entreprise: '{current_entreprise[:40]}...'")
+            else:
+                current_desc += line + "\n"
         
-        # Description (reste du texte après la première ligne)
-        if len(lines) > 1:
-            experience["description"] = '\n'.join(lines[1:]).strip()
-        
-        print(f"[DEBUG] Expérience extraite: titre={experience['titrePoste']}, entreprise={experience['entreprise']}")
-        
-        # Filtrer les expériences invalides (trop courtes ou sans titre)
-        if experience["titrePoste"] and len(experience["titrePoste"]) > 3:
-            experiences.append(experience)
+        # Description
+        elif current_poste:
+            current_desc += line + "\n"
     
+    # Sauvegarder la dernière expérience
+    if current_poste:
+        exp = {
+            "titrePoste": current_poste,
+            "entreprise": current_entreprise or "",
+            "dateDebut": current_date_debut,
+            "dateFin": current_date_fin,
+            "description": current_desc.strip()
+        }
+        print(f"[DEBUG] Dernière expérience: {exp['titrePoste'][:40]}...")
+        experiences.append(exp)
+    
+    print(f"[DEBUG] Total expériences: {len(experiences)}")
     return experiences
 
 def parse_competences(competence_text: str) -> List[str]:
     """
     Parse la section compétences pour extraire les compétences individuelles.
+    Gère les formats avec catégories (Back-End, Front-End, etc.)
     
     Args:
         competence_text: Texte de la section compétences
@@ -403,28 +459,131 @@ def parse_competences(competence_text: str) -> List[str]:
     
     competences = []
     
-    print(f"[DEBUG] Texte compétences à parser: {competence_text[:200]}...")
+    print(f"[DEBUG] Texte compétences à parser: {competence_text[:300]}...")
     
-    # Diviser par des séparateurs courants (virgules, points-virgules, sauts de ligne)
-    # et nettoyer chaque compétence
-    raw_competences = re.split(r'[,;\n•\-\*]', competence_text)
+    # Catégories et mots à ignorer
+    ignore_words = {
+        'COMPETENCES', 'TECHNIQUES', 'SKILLS', 'CLES', 'LANGUES', 'SOFT',
+        'BACK-END', 'FRONT-END', 'BASES', 'CLOUD', 'DEVOPS', 'OUTILS',
+        'Frameworks', 'Langages', 'Web', 'Backend', 'Frontend',
+        'ET', 'DE', 'DES', 'DU', 'LA', 'LE', 'LES', 'EN', 'ET', 'OU'
+    }
     
-    for comp in raw_competences:
-        comp = comp.strip()
-        # Ignorer les compétences vides ou trop courtes
-        if comp and len(comp) > 2:
-            # Nettoyer les caractères spéciaux
+    # Diviser en lignes
+    lines = competence_text.split('\n')
+    
+    for line in lines:
+        line = line.strip()
+        if not line or len(line) < 2:
+            continue
+        
+        # Ignorer les lignes qui sont des catégories (se terminent par :)
+        if line.endswith(':') or line.endswith(' :'):
+            print(f"[DEBUG] Ligne ignorée (catégorie): '{line}'")
+            continue
+        
+        # Détecter et gérer le format "Catégorie: Compétence1, Compétence2"
+        if ':' in line:
+            # Extraire uniquement la partie après ":"
+            line = line.split(':', 1)[1].strip()
+            print(f"[DEBUG] Ligne avec ':' nettoyée: '{line}'")
+        
+        # Diviser par des séparateurs (virgules, /, espaces multiples)
+        parts = re.split(r'[,/]|\s{2,}', line)
+        
+        for part in parts:
+            comp = part.strip()
+            # Nettoyer
             comp = re.sub(r'^[:\.\s]+', '', comp)
             comp = re.sub(r'[:\.\s]+$', '', comp)
+            
+            # Vérifier si c'est valide
             if comp and len(comp) > 2:
-                competences.append(comp)
+                # Diviser les compétences composées par des espaces simples
+                # mais garder les compétences composées connues (ex: spring boot, data science)
+                known_compound_skills = {'spring boot', 'data science', 'machine learning', 
+                                        'deep learning', 'natural language', 'artificial intelligence',
+                                        'full stack', 'front end', 'back end', 'dev ops'}
+                comp_lower = comp.lower()
+                
+                if comp_lower not in known_compound_skills and ' ' in comp:
+                    # Diviser en compétences individuelles
+                    sub_parts = comp.split()
+                    for sub_comp in sub_parts:
+                        sub_comp = sub_comp.strip()
+                        if sub_comp and len(sub_comp) > 2:
+                            words = sub_comp.upper().split()
+                            if words and words[0] not in ignore_words:
+                                if sub_comp not in competences:
+                                    competences.append(sub_comp)
+                                    print(f"[DEBUG] Compétence trouvée (divisée): '{sub_comp}'")
+                else:
+                    # Garder telle quelle
+                    words = comp.upper().split()
+                    if words and words[0] not in ignore_words:
+                        if comp not in competences:
+                            competences.append(comp)
+                            print(f"[DEBUG] Compétence trouvée: '{comp}'")
     
-    print(f"[DEBUG] Compétences extraites: {competences}")
+    print(f"[DEBUG] Total compétences extraites: {len(competences)}")
     return competences
+
+def extract_niveau_etude(formations: List[Dict]) -> str:
+    """
+    Extrait le niveau d'étude le plus élevé à partir de la liste des formations.
+    
+    Args:
+        formations: Liste des formations extraites du CV
+        
+    Returns:
+        Niveau d'étude (DOCTORAT, INGENIEUR, MASTER, LICENCE, DUT_BTS, BAC, SANS_EXIGENCE)
+    """
+    if not formations:
+        return "SANS_EXIGENCE"
+    
+    # Mapping des mots-clés vers les niveaux d'étude
+    niveau_mapping = {
+        "doctorat": "DOCTORAT",
+        "phd": "DOCTORAT",
+        "ingénieur": "INGENIEUR",
+        "engineer": "INGENIEUR",
+        "master": "MASTER",
+        "m2": "MASTER",
+        "licence": "LICENCE",
+        "bachelor": "LICENCE",
+        "dut": "DUT_BTS",
+        "bts": "DUT_BTS",
+        "bac": "BAC",
+        "baccalauréat": "BAC"
+    }
+    
+    # Ordre de priorité (du plus élevé au plus bas)
+    # SANS_EXIGENCE en dernier pour éviter l'erreur "not in list"
+    priorite = ["DOCTORAT", "INGENIEUR", "MASTER", "LICENCE", "DUT_BTS", "BAC", "SANS_EXIGENCE"]
+    
+    niveau_max = "SANS_EXIGENCE"
+    
+    for formation in formations:
+        diplome = formation.get("diplome", "").lower()
+        
+        # Chercher le niveau d'étude dans le diplôme
+        for mot_cle, niveau in niveau_mapping.items():
+            if mot_cle in diplome:
+                # Si ce niveau est plus élevé que le niveau actuel, le mettre à jour
+                if priorite.index(niveau) < priorite.index(niveau_max):
+                    niveau_max = niveau
+                break
+    
+    print(f"[DEBUG] Niveau d'étude extrait: {niveau_max}")
+    return niveau_max
 
 def parse_formations(formation_text: str) -> List[Dict]:
     """
     Parse la section formations pour extraire les formations complètes.
+    
+    Format attendu:
+    - Diplôme avec date (ex: Cycle d'Ingénieur 2023 — 2026)
+    - Établissement (ex: ESPRIT)
     
     Args:
         formation_text: Texte de la section formations
@@ -436,123 +595,116 @@ def parse_formations(formation_text: str) -> List[Dict]:
         return []
     
     formations = []
+    print(f"[DEBUG] Parsing formations: {formation_text[:200]}...")
     
-    print(f"[DEBUG] Texte formations à parser: {formation_text[:200]}...")
+    # Mots-clés d'établissements tunisiens
+    establishment_keywords = [
+        'ESPRIT', 'Faculté', 'Faculte', 'Institut', 'École', 'Ecole', 'Université',
+        'ISG', 'IHEC', 'ENIT', 'ENSI', 'INSAT', 'ISSAT', 'ISI', 'Supcom'
+    ]
     
-    # Diviser le texte en blocs (séparés par des lignes vides ou des points •)
-    blocks = re.split(r'\n\s*\n|\n•\s*', formation_text)
+    # Lignes à ignorer (titres)
+    ignore_patterns = ['FORMATION', 'EDUCATION', 'DIPLOMES', 'CURSUS']
     
-    # Si un seul bloc, utiliser une logique plus robuste basée sur les mots-clés d'établissement
-    if len(blocks) == 1:
-        lines = formation_text.split('\n')
-        current_block = []
-        blocks = []
-        in_establishment = False
+    lines = re.split(r'\r?\n|\r', formation_text)
+    pending_diplome = None
+    pending_annee = None
+    
+    for i, line in enumerate(lines):
+        line = line.strip()
+        if not line or len(line) < 3:
+            continue
         
-        for line in lines:
-            line = line.strip()
-            if not line:
-                continue
-            # Si la ligne contient des mots-clés d'établissement, c'est l'établissement
-            if any(keyword in line for keyword in ['Institut', 'École', 'Ecole', 'Université', 'ISG', 'IHEC', 'ENIT', 'ENSI']):
-                in_establishment = True
-                current_block.append(line)
-            # Si la ligne ne contient pas ces mots-clés et qu'on était dans un établissement
-            elif in_establishment and current_block:
-                # Sauvegarder le bloc actuel et commencer un nouveau
-                if len(current_block) >= 2:
-                    blocks.append('\n'.join(current_block))
-                current_block = [line]
-                in_establishment = False
+        # Ignorer les titres
+        line_upper = line.upper()
+        if any(pattern in line_upper for pattern in ignore_patterns):
+            print(f"[DEBUG] Ignoré (titre): '{line[:40]}...'")
+            continue
+        
+        # Vérifier si c'est une ligne avec date
+        year_match = re.search(r'(\d{4})\s*[-—]\s*(\d{4}|Présent|En cours)', line, re.IGNORECASE)
+        
+        if year_match:
+            # C'est une ligne avec date
+            # Sauvegarder le diplôme précédent s'il existe avec un établissement
+            if pending_diplome:
+                formation = {
+                    "diplome": pending_diplome,
+                    "etablissement": "",  # On n'a pas trouvé d'établissement
+                    "specialite": "",
+                    "anneeObtention": pending_annee
+                }
+                formations.append(formation)
+                print(f"[DEBUG] Formation (sans étab): {formation}")
+            
+            # Extraire l'année
+            start_year = year_match.group(1)
+            pending_annee = f"{start_year}-01-01"
+            
+            # Extraire le texte avant la date
+            text_before_date = line.replace(year_match.group(0), '').strip(' -—|')
+            
+            # Vérifier si le texte contient un établissement (format: Etablissement | Date)
+            is_establishment = any(keyword.upper() in text_before_date.upper() for keyword in establishment_keywords)
+            
+            if is_establishment:
+                # C'est une ligne "Etablissement | Date"
+                # Si on a un diplôme en attente, l'associer
+                if pending_diplome:
+                    formation = {
+                        "diplome": pending_diplome,
+                        "etablissement": text_before_date,
+                        "specialite": "",
+                        "anneeObtention": pending_annee
+                    }
+                    formations.append(formation)
+                    print(f"[DEBUG] Formation (complète): {formation}")
+                    pending_diplome = None
+                    pending_annee = None
+                else:
+                    # Établissement sans diplôme - ignorer
+                    print(f"[DEBUG] Établissement sans diplôme: '{text_before_date}'")
             else:
-                current_block.append(line)
+                # C'est peut-être un diplôme avec date sur la même ligne
+                pending_diplome = text_before_date
+                print(f"[DEBUG] Diplôme trouvé: '{pending_diplome}', année: {pending_annee}")
         
-        # Ajouter le dernier bloc
-        if current_block and len(current_block) >= 1:
-            blocks.append('\n'.join(current_block))
+        else:
+            # Pas de date - vérifier si c'est un établissement
+            is_establishment = any(keyword.upper() in line_upper for keyword in establishment_keywords)
+            
+            if is_establishment and pending_diplome:
+                # Associer cet établissement au diplôme en attente
+                formation = {
+                    "diplome": pending_diplome,
+                    "etablissement": line,
+                    "specialite": "",
+                    "anneeObtention": pending_annee
+                }
+                formations.append(formation)
+                print(f"[DEBUG] Formation (complète): {formation}")
+                pending_diplome = None
+                pending_annee = None
+            elif is_establishment and not pending_diplome:
+                # Établissement sans diplôme en attente - ignorer ou créer une formation vide
+                print(f"[DEBUG] Établissement sans diplôme en attente: '{line}'")
+            elif not is_establishment and not pending_diplome:
+                # C'est peut-être un diplôme sans date
+                pending_diplome = line
+                print(f"[DEBUG] Diplôme sans date: '{pending_diplome}'")
     
-    print(f"[DEBUG] Nombre de blocs formations: {len(blocks)}")
-    
-    for i, block in enumerate(blocks):
-        block = block.strip()
-        print(f"[DEBUG] Bloc {i}: {block[:100]}...")
-        
-        # Ignorer les blocs qui commencent par LANGUAGES ou d'autres sections non pertinentes
-        if "LANGUAGES" in block[:20]:
-            print(f"[DEBUG] Bloc {i} ignoré (section LANGUAGES)")
-            continue
-        
-        if not block or len(block) < 10:
-            continue
-        
+    # Sauvegarder le dernier diplôme s'il reste
+    if pending_diplome:
         formation = {
-            "diplome": "",
+            "diplome": pending_diplome,
             "etablissement": "",
             "specialite": "",
-            "anneeObtention": None  # Sera au format YYYY-MM-DD
+            "anneeObtention": pending_annee
         }
-        
-        lines = block.split('\n')
-        
-        # Première ligne: diplôme
-        if lines:
-            first_line = lines[0].strip()
-            print(f"[DEBUG] Formation - Première ligne: '{first_line}'")
-            # Si la ligne contient "|", c'est probablement un format compact "Diplôme | Établissement | Année"
-            if '|' in first_line and len(lines) == 1:
-                parts = first_line.split('|')
-                if len(parts) >= 1:
-                    formation["diplome"] = parts[0].strip()
-                if len(parts) >= 2:
-                    formation["etablissement"] = parts[1].strip()
-                if len(parts) >= 3:
-                    year_match = re.search(r'(\d{4})', parts[2])
-                    if year_match:
-                        year = int(year_match.group(1))
-                        formation["anneeObtention"] = f"{year}-01-01"
-                print(f"[DEBUG] Formation - Format compact - Diplôme: '{formation['diplome']}', Établissement: '{formation['etablissement']}', Année: '{formation['anneeObtention']}'")
-            else:
-                # Format standard: première ligne est le diplôme
-                formation["diplome"] = first_line
-                print(f"[DEBUG] Formation - Diplôme: '{formation['diplome']}'")
-        
-        # Deuxième ligne: établissement et année (si existe)
-        if len(lines) > 1:
-            second_line = lines[1].strip()
-            print(f"[DEBUG] Formation - Deuxième ligne: '{second_line}'")
-            # Extraire l'établissement (avant le "|")
-            if '|' in second_line:
-                parts = second_line.split('|')
-                formation["etablissement"] = parts[0].strip()
-                # L'année est après le "|"
-                year_match = re.search(r'(\d{4})', parts[1])
-                if year_match:
-                    year = int(year_match.group(1))
-                    formation["anneeObtention"] = f"{year}-01-01"  # Format YYYY-MM-DD
-            else:
-                # Pas de "|", toute la ligne est l'établissement
-                formation["etablissement"] = second_line
-                # Chercher l'année dans la ligne
-                year_match = re.search(r'(\d{4})', second_line)
-                if year_match:
-                    year = int(year_match.group(1))
-                    formation["anneeObtention"] = f"{year}-01-01"  # Format YYYY-MM-DD
-            print(f"[DEBUG] Formation - Établissement: '{formation['etablissement']}'")
-        
-        # Extraire l'année si pas encore trouvée
-        if formation["anneeObtention"] is None:
-            year_pattern = r'(\d{4})'
-            year_match = re.search(year_pattern, block)
-            if year_match:
-                year = int(year_match.group(1))
-                formation["anneeObtention"] = f"{year}-01-01"  # Format YYYY-MM-DD
-        
-        print(f"[DEBUG] Formation extraite: diplome={formation['diplome']}, etablissement={formation['etablissement']}, annee={formation['anneeObtention']}")
-        
-        # Filtrer les formations invalides
-        if formation["diplome"] and len(formation["diplome"]) > 3:
-            formations.append(formation)
+        formations.append(formation)
+        print(f"[DEBUG] Dernière formation: {formation}")
     
+    print(f"[DEBUG] Total formations: {len(formations)}")
     return formations
 
 def remove_duplicates(items: List[Dict], key_field: str) -> List[Dict]:
@@ -645,18 +797,25 @@ def extract_entities(nlp, text: str) -> Dict[str, List[Dict]]:
     print(f"[DEBUG] Compétences après dédoublonnage: {len(competences)}")
     
     # ============================================================
+    # EXTRACTION DU NIVEAU D'ÉTUDE
+    # ============================================================
+    niveau_etude = extract_niveau_etude(formations)
+    
+    # ============================================================
     # LOG DE CONTRÔLE : Afficher ce que Python envoie au Java
     # ============================================================
     print("[DEBUG] === ENVOI AU JAVA ===")
     print(f"[DEBUG] Compétences: {[c['text'] for c in competences]}")
     print(f"[DEBUG] Expériences: {experiences}")
     print(f"[DEBUG] Formations: {formations}")
+    print(f"[DEBUG] Niveau d'étude: {niveau_etude}")
     print("[DEBUG] ===================")
     
     return {
         "competences": competences,
         "experiences": experiences,
-        "formations": formations
+        "formations": formations,
+        "niveauEtude": niveau_etude
     }
 
 def train_model(training_data: List[Dict], output_dir: str = None, n_iter: int = 100):

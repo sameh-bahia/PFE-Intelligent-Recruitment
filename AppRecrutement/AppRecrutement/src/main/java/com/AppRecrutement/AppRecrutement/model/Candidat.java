@@ -3,6 +3,9 @@ package com.AppRecrutement.AppRecrutement.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import java.util.Date;
 import java.util.List;
 
@@ -13,6 +16,9 @@ import java.util.List;
  */
 @Entity
 @DiscriminatorValue("CANDIDAT")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Candidat extends Utilisateur {
 
     /** Numéro de téléphone du candidat */
@@ -27,8 +33,9 @@ public class Candidat extends Utilisateur {
     /** Titre professionnel ou profil du candidat (ex: Développeur Full Stack) */
     private String titreProfil;
 
-    /** Domaine du candidat (ex: IT, Santé, Finance, Industrie, Commerce, Education, Autre) */
-    private String domaine;
+    /** Niveau d'étude du candidat */
+    @Enumerated(EnumType.STRING)
+    private NiveauEtude niveauEtude;
 
     /** Liste des expériences professionnelles du candidat */
     @OneToMany(mappedBy = "candidat", cascade = CascadeType.ALL)
@@ -47,12 +54,6 @@ public class Candidat extends Utilisateur {
     @JsonIgnore
     @OneToMany(mappedBy = "candidat", cascade = CascadeType.ALL)
     private List<Candidature> candidatures;
-
-    /**
-     * Constructeur par défaut pour JPA/Hibernate.
-     */
-    public Candidat() {
-    }
 
     /**
      * Constructeur complet pour créer un candidat avec toutes les informations de base.
@@ -106,77 +107,5 @@ public class Candidat extends Utilisateur {
         candidature.setDatePostulation(new Date());
         candidature.setStatut(StatutCandidature.EN_ATTENTE);
         return candidature;
-    }
-
-    public String getTelephone() {
-        return telephone;
-    }
-
-    public void setTelephone(String telephone) {
-        this.telephone = telephone;
-    }
-
-    public String getAdresse() {
-        return adresse;
-    }
-
-    public void setAdresse(String adresse) {
-        this.adresse = adresse;
-    }
-
-    public Date getDateNaissance() {
-        return dateNaissance;
-    }
-
-    public void setDateNaissance(Date dateNaissance) {
-        this.dateNaissance = dateNaissance;
-    }
-
-    public String getTitreProfil() {
-        return titreProfil;
-    }
-
-    public void setTitreProfil(String titreProfil) {
-        this.titreProfil = titreProfil;
-    }
-
-    public String getDomaine() {
-        return domaine;
-    }
-
-    public void setDomaine(String domaine) {
-        this.domaine = domaine;
-    }
-
-    public List<Experience> getExperiences() {
-        return experiences;
-    }
-
-    public void setExperiences(List<Experience> experiences) {
-        this.experiences = experiences;
-    }
-
-    public List<Formation> getFormations() {
-        return formations;
-    }
-
-    public void setFormations(List<Formation> formations) {
-        this.formations = formations;
-    }
-
-    public CV getCv() {
-        return cv;
-    }
-
-    public void setCv(CV cv) {
-        this.cv = cv;
-    }
-
-    public List<Candidature> getCandidatures() {
-        return candidatures;
-    }
-
-    public void setCandidatures(List<Candidature> candidatures) {
-        this.candidatures = candidatures;
     }
 }

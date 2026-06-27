@@ -1,5 +1,6 @@
 package com.AppRecrutement.AppRecrutement.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.util.List;
@@ -15,7 +16,7 @@ public class Competence {
     private String categorie;
 
     @JsonIgnoreProperties("competence")
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "cv_competence",
         joinColumns = @JoinColumn(name = "competence_id"),
@@ -23,13 +24,8 @@ public class Competence {
     )
     private List<CV> cvs;
 
-    @JsonIgnoreProperties("competences")
-    @ManyToMany
-    @JoinTable(
-        name = "offre_competence",
-        joinColumns = @JoinColumn(name = "competence_id"),
-        inverseJoinColumns = @JoinColumn(name = "offre_id")
-    )
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "competences")
     private List<Offre> offres;
 
     public Competence() {

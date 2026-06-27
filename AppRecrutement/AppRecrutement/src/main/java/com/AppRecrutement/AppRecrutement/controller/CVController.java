@@ -183,6 +183,38 @@ public class CVController {
                 System.out.println("Compétences: " + entities.getOrDefault("competences", List.of()));
                 System.out.println("Expériences: " + entities.getOrDefault("experiences", List.of()));
                 System.out.println("Formations: " + entities.getOrDefault("formations", List.of()));
+                System.out.println("Niveau d'étude: " + entities.get("niveauEtude"));
+
+                // Mettre à jour le niveau d'étude du candidat
+                Object niveauEtudeObj = entities.get("niveauEtude");
+                String niveauEtudeStr = null;
+                
+                if (niveauEtudeObj instanceof String) {
+                    niveauEtudeStr = (String) niveauEtudeObj;
+                } else if (niveauEtudeObj instanceof List) {
+                    List<?> niveauList = (List<?>) niveauEtudeObj;
+                    if (!niveauList.isEmpty()) {
+                        niveauEtudeStr = niveauList.get(0).toString();
+                    }
+                }
+                
+                if (niveauEtudeStr != null) {
+                    try {
+                        com.AppRecrutement.AppRecrutement.model.NiveauEtude niveauEtude = 
+                            com.AppRecrutement.AppRecrutement.model.NiveauEtude.valueOf(niveauEtudeStr);
+                        candidat.setNiveauEtude(niveauEtude);
+                        candidatRepository.save(candidat);
+                        System.out.println("Niveau d'étude du candidat mis à jour: " + niveauEtude);
+                    } catch (IllegalArgumentException e) {
+                        System.err.println("Niveau d'étude invalide: " + niveauEtudeStr);
+                    }
+                }
+
+                // Supprimer les anciennes compétences du CV
+                if (savedCV.getCompetences() != null) {
+                    savedCV.getCompetences().clear();
+                    cvService.save(savedCV);
+                }
 
                 // Sauvegarde des compétences extraites
                 List<Map<String, Object>> competences = entities.getOrDefault("competences", List.of());

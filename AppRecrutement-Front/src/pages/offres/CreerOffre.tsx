@@ -8,10 +8,11 @@ export default function CreerOffre() {
   const [formData, setFormData] = useState({
     titre: '',
     description: '',
-    typeContrat: '',
+    typeOffre: '',
+    sousDomaineIT: '',
+    niveauEtudeRequis: '',
     salaire: '',
     lieu: '',
-    domaine: '',
     competences: ''
   });
   const [error, setError] = useState('');
@@ -98,23 +99,22 @@ export default function CreerOffre() {
           </div>
 
           <div>
-            <label htmlFor="typeContrat" className="block text-lg font-semibold text-[#1E293B] mb-3">
-              Type de contrat
+            <label htmlFor="typeOffre" className="block text-lg font-semibold text-[#1E293B] mb-3">
+              Type d'offre
             </label>
             <select
-              id="typeContrat"
-              name="typeContrat"
+              id="typeOffre"
+              name="typeOffre"
               required
-              value={formData.typeContrat}
+              value={formData.typeOffre}
               onChange={handleChange}
               className="w-full px-5 py-4 h-14 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
             >
               <option value="">Sélectionner...</option>
-              <option value="CDI">CDI</option>
-              <option value="CDD">CDD</option>
-              <option value="Stage">Stage</option>
-              <option value="Freelance">Freelance</option>
-              <option value="Alternance">Alternance</option>
+              <option value="EMPLOI">Emploi</option>
+              <option value="STAGE">Stage</option>
+              <option value="ALTERNANCE">Alternance</option>
+              <option value="FREELANCE">Freelance</option>
             </select>
           </div>
 
@@ -151,25 +151,47 @@ export default function CreerOffre() {
           </div>
 
           <div>
-            <label htmlFor="domaine" className="block text-lg font-semibold text-[#1E293B] mb-3">
-              Domaine
+            <label htmlFor="sousDomaineIT" className="block text-lg font-semibold text-[#1E293B] mb-3">
+              Sous-domaine IT
             </label>
             <select
-              id="domaine"
-              name="domaine"
+              id="sousDomaineIT"
+              name="sousDomaineIT"
               required
-              value={formData.domaine}
+              value={formData.sousDomaineIT}
               onChange={handleChange}
               className="w-full px-5 py-4 h-14 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
             >
               <option value="">Sélectionner...</option>
-              <option value="IT">IT</option>
-              <option value="Santé">Santé</option>
-              <option value="Finance">Finance</option>
-              <option value="Industrie">Industrie</option>
-              <option value="Commerce">Commerce</option>
-              <option value="Education">Education</option>
-              <option value="Autre">Autre</option>
+              <option value="DEVELOPPEMENT">Développement</option>
+              <option value="DATA_SCIENCE">Data Science</option>
+              <option value="DEVOPS">DevOps</option>
+              <option value="CYBERSECURITE">Cybersécurité</option>
+              <option value="GESTION_PROJET">Gestion de Projet</option>
+              <option value="QA">Quality Assurance</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="niveauEtudeRequis" className="block text-lg font-semibold text-[#1E293B] mb-3">
+              Niveau d'étude requis
+            </label>
+            <select
+              id="niveauEtudeRequis"
+              name="niveauEtudeRequis"
+              required
+              value={formData.niveauEtudeRequis}
+              onChange={handleChange}
+              className="w-full px-5 py-4 h-14 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
+            >
+              <option value="">Sélectionner...</option>
+              <option value="BAC">BAC</option>
+              <option value="DUT_BTS">DUT/BTS</option>
+              <option value="LICENCE">Licence</option>
+              <option value="MASTER">Master</option>
+              <option value="INGENIEUR">Ingénieur</option>
+              <option value="DOCTORAT">Doctorat</option>
+              <option value="SANS_EXIGENCE">Sans exigence</option>
             </select>
           </div>
 

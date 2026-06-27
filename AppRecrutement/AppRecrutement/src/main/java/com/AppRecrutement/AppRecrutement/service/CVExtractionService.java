@@ -50,7 +50,7 @@ public class CVExtractionService {
     // Port par défaut : 8000
     // Endpoint : /extract
     // ============================================================
-    private static final String PYTHON_SERVICE_URL = "http://localhost:8000/extract";
+    private static final String PYTHON_SERVICE_URL = "http://localhost:8001/extract";
     
     // RestTemplate pour les appels HTTP vers le service Python
     private final RestTemplate restTemplate;
@@ -147,11 +147,12 @@ public class CVExtractionService {
      * {
      *   "competences": [{"text": "Java", "label": "COMPETENCE", "start": 0, "end": 4}, ...],
      *   "experiences": [{"text": "Développeur", "label": "EXPERIENCE", ...}, ...],
-     *   "formations": [{"text": "Master", "label": "FORMATION", ...}, ...]
+     *   "formations": [{"text": "Master", "label": "FORMATION", ...}, ...],
+     *   "niveauEtude": "MASTER"
      * }
      * 
      * @param cvText Texte brut du CV extrait du fichier PDF/DOCX
-     * @return Map contenant 3 listes : compétences, expériences, formations
+     * @return Map contenant 3 listes + niveau d'étude : compétences, expériences, formations, niveauEtude
      * @throws RuntimeException Si l'appel au service Python échoue
      */
     public Map<String, List<Map<String, Object>>> extractEntitiesWithAI(String cvText) {

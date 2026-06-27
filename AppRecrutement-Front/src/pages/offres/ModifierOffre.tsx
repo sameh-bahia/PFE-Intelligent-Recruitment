@@ -9,9 +9,12 @@ export default function ModifierOffre() {
   const [formData, setFormData] = useState({
     titre: '',
     description: '',
-    typeContrat: '',
+    typeOffre: '',
+    sousDomaineIT: '',
+    niveauEtudeRequis: '',
     salaire: '',
-    lieu: ''
+    lieu: '',
+    competences: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -28,9 +31,12 @@ export default function ModifierOffre() {
       setFormData({
         titre: offre.titre,
         description: offre.description,
-        typeContrat: offre.typeContrat,
+        typeOffre: offre.typeOffre,
+        sousDomaineIT: offre.sousDomaineIT,
+        niveauEtudeRequis: offre.niveauEtudeRequis,
         salaire: offre.salaire,
-        lieu: offre.lieu
+        lieu: offre.lieu,
+        competences: offre.competences ? offre.competences.map((c: any) => c.nom).join(', ') : ''
       });
       setLoading(false);
     } catch (err) {
@@ -43,6 +49,10 @@ export default function ModifierOffre() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    console.log('=== DEBUG FORM DATA AVANT ENVOI ===');
+    console.log('FormData:', formData);
+    console.log('Compétences:', formData.competences);
 
     try {
       const response = await api.put(`/offres/${id}`, formData);
@@ -131,23 +141,22 @@ export default function ModifierOffre() {
           </div>
 
           <div>
-            <label htmlFor="typeContrat" className="block text-lg font-semibold text-[#1E293B] mb-3">
-              Type de contrat
+            <label htmlFor="typeOffre" className="block text-lg font-semibold text-[#1E293B] mb-3">
+              Type d'offre
             </label>
             <select
-              id="typeContrat"
-              name="typeContrat"
+              id="typeOffre"
+              name="typeOffre"
               required
-              value={formData.typeContrat}
+              value={formData.typeOffre}
               onChange={handleChange}
               className="w-full px-5 py-4 h-14 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
             >
               <option value="">Sélectionner...</option>
-              <option value="CDI">CDI</option>
-              <option value="CDD">CDD</option>
-              <option value="Stage">Stage</option>
-              <option value="Freelance">Freelance</option>
-              <option value="Alternance">Alternance</option>
+              <option value="EMPLOI">Emploi</option>
+              <option value="STAGE">Stage</option>
+              <option value="ALTERNANCE">Alternance</option>
+              <option value="FREELANCE">Freelance</option>
             </select>
           </div>
 
@@ -178,6 +187,66 @@ export default function ModifierOffre() {
               required
               placeholder="Ex: Paris, Tunis, Remote"
               value={formData.lieu}
+              onChange={handleChange}
+              className="w-full px-5 py-4 h-14 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="sousDomaineIT" className="block text-lg font-semibold text-[#1E293B] mb-3">
+              Sous-domaine IT
+            </label>
+            <select
+              id="sousDomaineIT"
+              name="sousDomaineIT"
+              required
+              value={formData.sousDomaineIT}
+              onChange={handleChange}
+              className="w-full px-5 py-4 h-14 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
+            >
+              <option value="">Sélectionner...</option>
+              <option value="DEVELOPPEMENT">Développement</option>
+              <option value="DATA_SCIENCE">Data Science</option>
+              <option value="DEVOPS">DevOps</option>
+              <option value="CYBERSECURITE">Cybersécurité</option>
+              <option value="GESTION_PROJET">Gestion de Projet</option>
+              <option value="QA">Quality Assurance</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="niveauEtudeRequis" className="block text-lg font-semibold text-[#1E293B] mb-3">
+              Niveau d'étude requis
+            </label>
+            <select
+              id="niveauEtudeRequis"
+              name="niveauEtudeRequis"
+              required
+              value={formData.niveauEtudeRequis}
+              onChange={handleChange}
+              className="w-full px-5 py-4 h-14 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
+            >
+              <option value="">Sélectionner...</option>
+              <option value="BAC">BAC</option>
+              <option value="DUT_BTS">DUT/BTS</option>
+              <option value="LICENCE">Licence</option>
+              <option value="MASTER">Master</option>
+              <option value="INGENIEUR">Ingénieur</option>
+              <option value="DOCTORAT">Doctorat</option>
+              <option value="SANS_EXIGENCE">Sans exigence</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="competences" className="block text-lg font-semibold text-[#1E293B] mb-3">
+              Compétences requises
+            </label>
+            <input
+              id="competences"
+              name="competences"
+              type="text"
+              placeholder="Ex: Java, Spring Boot, Angular (séparées par des virgules)"
+              value={formData.competences}
               onChange={handleChange}
               className="w-full px-5 py-4 h-14 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all text-lg"
             />

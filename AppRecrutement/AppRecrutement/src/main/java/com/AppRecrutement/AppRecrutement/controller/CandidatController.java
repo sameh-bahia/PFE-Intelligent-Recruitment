@@ -5,7 +5,6 @@ import com.AppRecrutement.AppRecrutement.repository.CandidatRepository;
 import com.AppRecrutement.AppRecrutement.service.CandidatService;
 import com.AppRecrutement.AppRecrutement.repository.ExperienceRepository;
 import com.AppRecrutement.AppRecrutement.repository.FormationRepository;
-import com.AppRecrutement.AppRecrutement.repository.CVRepository;
 import com.AppRecrutement.AppRecrutement.repository.CompetenceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -36,9 +35,6 @@ public class CandidatController {
     private FormationRepository formationRepository;
 
     @Autowired
-    private CVRepository cvRepository;
-
-    @Autowired
     private CompetenceRepository competenceRepository;
 
     /**
@@ -48,29 +44,6 @@ public class CandidatController {
     @GetMapping
     public List<Candidat> getAllCandidats() {
         return candidatService.findAll();
-    }
-
-    /**
-     * Supprime tous les candidats du domaine Santé.
-     * @return Message de confirmation
-     */
-    @DeleteMapping("/delete-sante")
-    public ResponseEntity<String> deleteCandidatsSante() {
-        List<Candidat> candidatsSante = candidatRepository.findByDomaineContainingIgnoreCase("santé");
-        int count = candidatsSante.size();
-        
-        for (Candidat candidat : candidatsSante) {
-            // Supprimer les expériences, formations, compétences et CV associés
-            experienceRepository.deleteByCandidatId(candidat.getId());
-            formationRepository.deleteByCandidatId(candidat.getId());
-            competenceRepository.deleteByCandidatId(candidat.getId());
-            if (candidat.getCv() != null) {
-                cvRepository.deleteById(candidat.getCv().getId());
-            }
-            candidatRepository.deleteById(candidat.getId());
-        }
-        
-        return ResponseEntity.ok(count + " candidat(s) du domaine Santé supprimé(s)");
     }
 
     /**
