@@ -74,6 +74,10 @@ export default function CandidaturesRecues() {
 
   const handleConfirmAccept = async () => {
     if (!selectedCandidature) return;
+    if (!interviewDate) {
+      setError('Veuillez renseigner la date et l\'heure de l\'entretien');
+      return;
+    }
 
     try {
       await api.put(`/candidatures/${selectedCandidature.id}/statut`, {

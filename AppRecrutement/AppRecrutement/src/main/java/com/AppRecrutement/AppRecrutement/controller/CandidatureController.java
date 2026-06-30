@@ -341,14 +341,16 @@ public class CandidatureController {
                 String lienEntretien = (String) payload.get("lienEntretien");
                 
                 try {
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
-                    Date dateEntretien = sdf.parse(dateEntretienStr);
-                    candidature.setDateEntretien(dateEntretien);
+                    if (dateEntretienStr != null && !dateEntretienStr.isEmpty()) {
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+                        Date dateEntretien = sdf.parse(dateEntretienStr);
+                        candidature.setDateEntretien(dateEntretien);
+                    }
                     candidature.setTypeEntretien(typeEntretien);
                     candidature.setLienEntretien(lienEntretien);
                     
-                    // Envoyer l'email de convocation
-                    if (candidature.getCandidat() != null && candidature.getOffre() != null) {
+                    // Envoyer l'email de convocation seulement si la date est valide
+                    if (candidature.getCandidat() != null && candidature.getOffre() != null && candidature.getDateEntretien() != null) {
                         String nomEntreprise = candidature.getOffre().getRecruteur() != null 
                             ? candidature.getOffre().getRecruteur().getNomEntreprise() 
                             : "Notre entreprise";
@@ -357,7 +359,7 @@ public class CandidatureController {
                             candidature.getCandidat().getEmail(),
                             candidature.getCandidat().getNom(),
                             candidature.getOffre().getTitre(),
-                            dateEntretien,
+                            candidature.getDateEntretien(),
                             typeEntretien,
                             lienEntretien,
                             nomEntreprise
@@ -365,6 +367,7 @@ public class CandidatureController {
                     }
                 } catch (Exception e) {
                     System.err.println("Erreur lors de l'envoi de l'email: " + e.getMessage());
+                    e.printStackTrace();
                 }
             }
             
