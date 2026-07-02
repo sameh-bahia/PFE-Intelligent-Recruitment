@@ -287,7 +287,7 @@ def extract_cv_sections(text: str) -> Dict[str, str]:
 def parse_experiences(experience_text: str) -> List[Dict]:
     """
     Parse la section expériences pour extraire les expériences individuelles.
-    Version robuste avec try-except global pour éviter les crashes.
+    Version robuste avec try-except global et look-ahead pour les dates sur lignes suivantes.
     
     Args:
         experience_text: Texte de la section expériences
@@ -315,16 +315,17 @@ def parse_experiences(experience_text: str) -> List[Dict]:
             text = text.replace('-', ' ').replace('—', ' ')
             return ' '.join(text.split())
         
-        # Titres de section à ignorer
+        # Titres de section à ignorer (normalisés)
         section_patterns = [
             'EXPERIENCES PROFESSIONNELLES', 'EXPERIENCE PROFESSIONNELLE',
             'PROJETS ACADEMIQUES', 'FORMATION', 'COMPETENCES',
-            'EXPERIENCES & PROJETS', 'EXPÉRIENCES & PROJETS'
+            'EXPERIENCES & PROJETS', 'EXPERIENCES & PROJETS'
         ]
         
         # Regex pour détecter les dates (plages ou années isolées)
+        # Accepte: 2023-2024, 2023 2024, 2023–2024, Mois YYYY - Mois YYYY
         date_regex = re.compile(
-            r'(\d{4}|(?:Janvier|Février|Mars|Avril|Mai|Juin|Juillet|Août|Septembre|Octobre|Novembre|Décembre)\s+\d{4}|\d{2}/\d{2}/\d{4})\s*[-—]\s*(\d{4}|Présent|Present|(?:Janvier|Février|Mars|Avril|Mai|Juin|Juillet|Août|Septembre|Octobre|Novembre|Décembre)\s+\d{4}|\d{2}/\d{2}/\d{4})|(?<!\d)(\d{4})(?!\d)',
+            r'(\d{4}|(?:Janvier|Février|Mars|Avril|Mai|Juin|Juillet|Août|Septembre|Octobre|Novembre|Décembre)\s+\d{4}|\d{2}/\d{2}/\d{4})\s+[-—]?\s*(\d{4}|Présent|Present|(?:Janvier|Février|Mars|Avril|Mai|Juin|Juillet|Août|Septembre|Octobre|Novembre|Décembre)\s+\d{4}|\d{2}/\d{2}/\d{4})|(?<!\d)(\d{4})(?!\d)',
             re.IGNORECASE
         )
         
@@ -335,6 +336,17 @@ def parse_experiences(experience_text: str) -> List[Dict]:
                 return year_match.group(0)
             return None
         
+        # Fonction pour chercher une date dans les lignes suivantes (look-ahead)
+        def find_date_in_next_lines(lines, start_index, max_lookahead=3):
+            for offset in range(1, max_lookahead + 1):
+                if start_index + offset < len(lines):
+                    next_line = lines[start_index + offset].strip()
+                    if next_line and len(next_line) >= 3:
+                        date_match = date_regex.search(next_line)
+                        if date_match:
+                            return date_match, offset
+            return None, None
+        
         # Diviser en lignes
         lines = experience_text.split('\n')
         current_poste = None
@@ -342,10 +354,14 @@ def parse_experiences(experience_text: str) -> List[Dict]:
         current_date_debut = None
         current_date_fin = None
         current_desc = ""
+        processed_indices = set()  # Pour éviter de traiter les lignes de date deux fois
         
         for i, line in enumerate(lines):
             line = line.strip()
             if not line or len(line) < 3:
+                continue
+            
+            if i in processed_indices:
                 continue
             
             # Ignorer les titres de section
@@ -355,94 +371,11 @@ def parse_experiences(experience_text: str) -> List[Dict]:
                 print(f"[DEBUG] Ignoré (titre): '{line[:50]}...'")
                 continue
             
-            # Chercher une date dans la ligne
+            # Chercher une date dans la ligne courante
             year_match = date_regex.search(line)
             
-            # Cas 1: Ligne avec date et poste sur la même ligne (ex: "Poste Février 2025 – Juin 2025")
+            # Cas 1: Ligne avec date et poste sur la même ligne
             if year_match and not current_poste:
-                # Sauvegarder l'expérience précédente si elle existe
-                if current_poste:
-                    exp = {
-                        "titrePoste": current_poste,
-                        "entreprise": current_entreprise or "",
-                        "dateDebut": current_date_debut,
-                        "dateFin": current_date_fin,
-                        "description": current_desc.strip()
-                    }
-                    print(f"[DEBUG] Expérience sauvegardée: {exp['titrePoste'][:40]}...")
-                    experiences.append(exp)
-                
-                # Réinitialiser
-                current_desc = ""
-                current_entreprise = None
-                current_date_debut = None
-                current_date_fin = None
-                
-                # Extraire le poste (tout avant la date)
-                line_without_date = line.replace(year_match.group(0), '').strip(' -—|')
-                current_poste = line_without_date if line_without_date else "Poste non spécifié"
-                
-                # Extraire les dates
-                if year_match.lastindex and year_match.lastindex >= 3 and year_match.group(3):
-                    # Année isolée
-                    isolated_year = year_match.group(3)
-                    current_date_debut = f"{isolated_year}-01-01"
-                    current_date_fin = f"{isolated_year}-01-01"
-                    print(f"[DEBUG] Année isolée: {isolated_year}")
-                else:
-                    # Plage de dates
-                    start_date = extract_year(year_match.group(1))
-                    end_date = extract_year(year_match.group(2))
-                    
-                    if start_date:
-                        current_date_debut = f"{start_date}-01-01"
-                    if end_date and end_date.upper() not in ['PRÉSENT', 'PRESENT']:
-                        current_date_fin = f"{end_date}-01-01"
-                
-                print(f"[DEBUG] Nouveau poste avec date: '{current_poste[:40]}...' ({current_date_debut} - {current_date_fin})")
-            
-            # Cas 2: Ligne avec date sur ligne avec puce (associer au poste courant)
-            elif year_match and current_poste and (line.startswith('•') or line.startswith('-')):
-                # Sauvegarder l'expérience précédente si elle n'a pas de dates
-                if not current_date_debut:
-                    exp = {
-                        "titrePoste": current_poste,
-                        "entreprise": current_entreprise or "",
-                        "dateDebut": current_date_debut,
-                        "dateFin": current_date_fin,
-                        "description": current_desc.strip()
-                    }
-                    print(f"[DEBUG] Expérience sauvegardée (sans dates): {exp['titrePoste'][:40]}...")
-                    experiences.append(exp)
-                    current_desc = ""
-                    current_entreprise = None
-                
-                # Extraire les dates
-                if year_match.lastindex and year_match.lastindex >= 3 and year_match.group(3):
-                    isolated_year = year_match.group(3)
-                    current_date_debut = f"{isolated_year}-01-01"
-                    current_date_fin = f"{isolated_year}-01-01"
-                else:
-                    start_date = extract_year(year_match.group(1))
-                    end_date = extract_year(year_match.group(2))
-                    
-                    if start_date:
-                        current_date_debut = f"{start_date}-01-01"
-                    if end_date and end_date.upper() not in ['PRÉSENT', 'PRESENT']:
-                        current_date_fin = f"{end_date}-01-01"
-                
-                print(f"[DEBUG] Date associée au poste: {current_date_debut} - {current_date_fin}")
-            
-            # Cas 3: Ligne entreprise (si on a un poste mais pas encore d'entreprise)
-            elif current_poste and not current_entreprise and len(line) < 60:
-                if not line.startswith('-') and not line.startswith('•'):
-                    current_entreprise = line
-                    print(f"[DEBUG] Entreprise: '{current_entreprise[:40]}...'")
-                else:
-                    current_desc += line + "\n"
-            
-            # Cas 4: Format "Projet : ..." ou "Stage : ..."
-            elif ':' in line and not year_match and ('PROJET' in normalized or 'STAGE' in normalized):
                 # Sauvegarder l'expérience précédente
                 if current_poste:
                     exp = {
@@ -457,13 +390,139 @@ def parse_experiences(experience_text: str) -> List[Dict]:
                 
                 # Réinitialiser
                 current_desc = ""
+                current_entreprise = None
+                current_date_debut = None
+                current_date_fin = None
+                
+                # Extraire le poste
+                line_without_date = line.replace(year_match.group(0), '').strip(' -—|')
+                current_poste = line_without_date if line_without_date else "Poste non spécifié"
+                
+                # Extraire les dates
+                if year_match.lastindex and year_match.lastindex >= 3 and year_match.group(3):
+                    isolated_year = year_match.group(3)
+                    current_date_debut = f"{isolated_year}-01-01"
+                    current_date_fin = f"{isolated_year}-01-01"
+                else:
+                    start_date = extract_year(year_match.group(1))
+                    end_date = extract_year(year_match.group(2))
+                    if start_date:
+                        current_date_debut = f"{start_date}-01-01"
+                    if end_date and end_date.upper() not in ['PRÉSENT', 'PRESENT']:
+                        current_date_fin = f"{end_date}-01-01"
+                
+                print(f"[DEBUG] Nouveau poste avec date: '{current_poste[:40]}...' ({current_date_debut} - {current_date_fin})")
+            
+            # Cas 2: Ligne qui ressemble à un poste/entreprise SANS date -> chercher date en avant
+            elif not year_match and not current_poste:
+                # Détecter si c'est un poste (contient des mots-clés de poste)
+                poste_keywords = ['développeur', 'ingénieur', 'analyste', 'manager', 'consultant', 'stage', 'intern', 'assistant', 'chef', 'lead', 'architecte', 'react', 'java', 'python', 'developer', 'engineer']
+                is_poste = any(keyword in normalized for keyword in poste_keywords)
+                
+                if is_poste or len(line) < 60:  # Si court, probablement un poste ou entreprise
+                    # Chercher la date dans les lignes suivantes
+                    future_date_match, offset = find_date_in_next_lines(lines, i)
+                    
+                    if future_date_match:
+                        # Sauvegarder l'expérience précédente
+                        if current_poste:
+                            exp = {
+                                "titrePoste": current_poste,
+                                "entreprise": current_entreprise or "",
+                                "dateDebut": current_date_debut,
+                                "dateFin": current_date_fin,
+                                "description": current_desc.strip()
+                            }
+                            print(f"[DEBUG] Expérience sauvegardée: {exp['titrePoste'][:40]}...")
+                            experiences.append(exp)
+                        
+                        # Réinitialiser
+                        current_desc = ""
+                        current_entreprise = None
+                        current_date_debut = None
+                        current_date_fin = None
+                        
+                        current_poste = line
+                        
+                        # Extraire les dates de la ligne future
+                        if future_date_match.lastindex and future_date_match.lastindex >= 3 and future_date_match.group(3):
+                            isolated_year = future_date_match.group(3)
+                            current_date_debut = f"{isolated_year}-01-01"
+                            current_date_fin = f"{isolated_year}-01-01"
+                        else:
+                            start_date = extract_year(future_date_match.group(1))
+                            end_date = extract_year(future_date_match.group(2))
+                            if start_date:
+                                current_date_debut = f"{start_date}-01-01"
+                            if end_date and end_date.upper() not in ['PRÉSENT', 'PRESENT']:
+                                current_date_fin = f"{end_date}-01-01"
+                        
+                        # Marquer la ligne de date comme traitée
+                        processed_indices.add(i + offset)
+                        print(f"[DEBUG] Nouveau poste avec date (look-ahead): '{current_poste[:40]}...' ({current_date_debut} - {current_date_fin})")
+                    else:
+                        # Pas de date trouvée, considérer comme poste sans date
+                        current_poste = line
+                        print(f"[DEBUG] Nouveau poste sans date: '{current_poste[:40]}...'")
+            
+            # Cas 3: Ligne entreprise (si on a un poste mais pas encore d'entreprise)
+            elif current_poste and not current_entreprise and len(line) < 60:
+                if not line.startswith('-') and not line.startswith('•'):
+                    current_entreprise = line
+                    print(f"[DEBUG] Entreprise: '{current_entreprise[:40]}...'")
+                else:
+                    current_desc += line + "\n"
+            
+            # Cas 4: Ligne avec date sur ligne avec puce (associer au poste courant)
+            elif year_match and current_poste and (line.startswith('•') or line.startswith('-')):
+                if not current_date_debut:
+                    exp = {
+                        "titrePoste": current_poste,
+                        "entreprise": current_entreprise or "",
+                        "dateDebut": current_date_debut,
+                        "dateFin": current_date_fin,
+                        "description": current_desc.strip()
+                    }
+                    print(f"[DEBUG] Expérience sauvegardée (sans dates): {exp['titrePoste'][:40]}...")
+                    experiences.append(exp)
+                    current_desc = ""
+                    current_entreprise = None
+                
+                if year_match.lastindex and year_match.lastindex >= 3 and year_match.group(3):
+                    isolated_year = year_match.group(3)
+                    current_date_debut = f"{isolated_year}-01-01"
+                    current_date_fin = f"{isolated_year}-01-01"
+                else:
+                    start_date = extract_year(year_match.group(1))
+                    end_date = extract_year(year_match.group(2))
+                    if start_date:
+                        current_date_debut = f"{start_date}-01-01"
+                    if end_date and end_date.upper() not in ['PRÉSENT', 'PRESENT']:
+                        current_date_fin = f"{end_date}-01-01"
+                
+                print(f"[DEBUG] Date associée au poste: {current_date_debut} - {current_date_fin}")
+            
+            # Cas 5: Format "Projet : ..." ou "Stage : ..."
+            elif ':' in line and not year_match and ('PROJET' in normalized or 'STAGE' in normalized):
+                if current_poste:
+                    exp = {
+                        "titrePoste": current_poste,
+                        "entreprise": current_entreprise or "",
+                        "dateDebut": current_date_debut,
+                        "dateFin": current_date_fin,
+                        "description": current_desc.strip()
+                    }
+                    print(f"[DEBUG] Expérience sauvegardée: {exp['titrePoste'][:40]}...")
+                    experiences.append(exp)
+                
+                current_desc = ""
                 current_date_debut = None
                 current_date_fin = None
                 current_entreprise = None
                 current_poste = line.strip()
                 print(f"[DEBUG] Nouveau projet/stage: '{current_poste[:40]}...'")
             
-            # Cas 5: Description
+            # Cas 6: Description
             elif current_poste:
                 current_desc += line + "\n"
         
