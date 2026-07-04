@@ -15,129 +15,33 @@ from datetime import datetime  # pour la normalisation des dates
 
 # ============================================================
 # CONFIGURATION DU CHEMIN DU MODÈLE
-# MODEL_PATH : Chemin où le modèle entraîné sera sauvegardé/chargé
-# Structure : D:\PFE\AppRecrutement-CV-Service\models\cv_ner_model
+# COMPETENCE_NER_PATH : Chemin du modèle NER entraîné pour les compétences
+# Structure : D:\PFE\AppRecrutement-CV-Service\models\competence_ner
 # ============================================================
-MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models", "cv_ner_model")
+COMPETENCE_NER_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models", "competence_ner")
 
 def load_model():
     """
-    Charge le modèle spaCy pour l'extraction d'entités depuis les CVs.
+    Charge le modèle spaCy NER entraîné localement pour l'extraction de compétences.
     
     STRATÉGIE DE CHARGEMENT :
-    1. Si un modèle entraîné existe dans models/cv_ner_model, on le charge
-    2. Sinon, on charge le modèle multilingue de base (xx_ent_wiki_sm)
-    3. On ajoute toujours les patterns EntityRuler pour les compétences
-    4. Si le modèle multilingue n'est pas installé, on le télécharge automatiquement
+    1. Charge le modèle NER entraîné depuis models/competence_ner
+    2. Si le modèle n'existe pas, lève une erreur (le modèle doit être entraîné au préalable)
     
     Returns:
-        nlp: Objet spaCy chargé avec le modèle NER et les patterns
+        nlp: Objet spaCy chargé avec le modèle NER entraîné pour les compétences
     """
-    # Vérifier si un modèle entraîné existe déjà
-    if os.path.exists(MODEL_PATH):
-        print(f"Chargement du modèle entraîné depuis {MODEL_PATH}")
-        nlp = spacy.load(MODEL_PATH)  # Charger le modèle personnalisé entraîné
+    # Vérifier si le modèle NER entraîné existe
+    if os.path.exists(COMPETENCE_NER_PATH):
+        print(f"Chargement du modèle NER entraîné depuis {COMPETENCE_NER_PATH}")
+        nlp = spacy.load(COMPETENCE_NER_PATH)
+        print(f"[OK] Modèle NER chargé avec succès")
+        return nlp
     else:
-        print("Modèle entraîné non trouvé, chargement du modèle multilingue de base")
-        try:
-            # Essayer de charger le modèle multilingue pré-entraîné
-            nlp = spacy.load("xx_ent_wiki_sm")
-        except OSError:
-            # Si le modèle n'est pas installé, le télécharger automatiquement
-            print("Modèle multilingue non installé, installation en cours...")
-            import subprocess
-            subprocess.run(["python", "-m", "spacy", "download", "xx_ent_wiki_sm"])
-            nlp = spacy.load("xx_ent_wiki_sm")
-    
-    # ============================================================
-    # AJOUT DES PATTERNS ENTITYRULER POUR LES COMPÉTENCES
-    # Ajouté dans tous les cas (modèle entraîné ou de base)
-    # ============================================================
-    print("Ajout des patterns EntityRuler pour les compétences...")
-    
-    competence_patterns = [
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "java"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "python"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "spring"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "spring boot"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "hibernate"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "django"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "flask"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "react"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "angular"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "javascript"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "sql"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "postgresql"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "mysql"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "mongodb"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "docker"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "kubernetes"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "k8s"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "git"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "ci/cd"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "devops"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "c#"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": ".net"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "asp.net"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "azure"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "aws"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "gcp"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "microservices"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "rest"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "graphql"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "agile"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "scrum"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "kanban"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "jira"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "trello"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "confluence"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "machine learning"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "deep learning"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "tensorflow"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "pytorch"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "keras"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "pandas"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "numpy"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "tableau"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "power bi"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "excel"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "figma"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "sketch"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "adobe xd"}]},
-        # Compétences Logistique et Supply Chain
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "gestion de stock"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "supply chain"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "négociation fournisseurs"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "optimisation des flux"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "erp"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "sap"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "management d'équipe"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "transport international"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "logistique"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "approvisionnement"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "planification"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "audit"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "gestion"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "supply"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "chain"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "négociation"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "fournisseurs"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "optimisation"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "erp"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "sap"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "management"}]},
-        {"label": "COMPETENCE", "pattern": [{"LOWER": "transport"}]},
-    ]
-    
-    # Ajouter l'EntityRuler au pipeline AVANT le NER
-    if "entity_ruler" not in nlp.pipe_names:
-        ruler = nlp.add_pipe("entity_ruler", before="ner")
-        ruler.add_patterns(competence_patterns)
-        print(f"[OK] EntityRuler ajouté avec {len(competence_patterns)} patterns de compétences")
-    else:
-        print("[INFO] EntityRuler existe déjà")
-    
-    return nlp
+        raise FileNotFoundError(
+            f"Modèle NER non trouvé à {COMPETENCE_NER_PATH}. "
+            "Veuillez d'abord entraîner le modèle en exécutant: python train_ner_model.py"
+        )
 
 def normalize_date_range(date_str: str) -> Dict[str, str]:
     """
@@ -186,7 +90,8 @@ def extract_cv_sections(text: str) -> Dict[str, str]:
     sections = {
         "experiences": "",
         "formations": "",
-        "competences": ""
+        "competences": "",
+        "projets": ""
     }
     
     print(f"[DEBUG] ===== EXTRACT CV SECTIONS =====")
@@ -201,7 +106,7 @@ def extract_cv_sections(text: str) -> Dict[str, str]:
         (r'EXPÉRIENCE\s+&\s+PROJETS', 'experiences'),  # EXPÉRIENCE & PROJETS
         (r'EXPÉRIENCES?\s+&\s+STAGES', 'experiences'),  # EXPÉRIENCES & STAGES
         (r'EXPÉRIENCE', 'experiences'),  # EXPÉRIENCE (fallback)
-        (r'PROJETS?\s+ACADÉMIQUES?', 'experiences'),  # PROJETS ACADÉMIQUES
+        (r'PROJETS?\s+ACADÉMIQUES?', 'projets'),  # PROJETS ACADÉMIQUES (section distincte)
         # Formations
         (r'FORMATION\s+&\s+DIPLÔMES', 'formations'),  # FORMATION & DIPLÔMES
         (r'FORMATION\s+ET\s+DIPLOMES', 'formations'),  # FORMATION ET DIPLOMES
@@ -213,8 +118,9 @@ def extract_cv_sections(text: str) -> Dict[str, str]:
         (r'COMPÉTENCES\s+TECHNIQUES', 'competences'),  # COMPÉTENCES TECHNIQUES
         (r'COMPETENCES\s+CLES', 'competences'),  # COMPETENCES CLES
         (r'COMPÉTENCES', 'competences'),  # COMPÉTENCES (fallback)
-        (r'LANGUES\s+&\s+SOFT\s+SKILLS', 'competences'),  # LANGUES & SOFT SKILLS
-        (r'LANGUES', 'competences'),  # LANGUES
+        # Langues (section distincte, PAS fusionnée avec compétences)
+        (r'LANGUES\s+&\s+SOFT\s+SKILLS', 'langues'),  # LANGUES & SOFT SKILLS
+        (r'LANGUES', 'langues'),  # LANGUES
     ]
     
     sections_with_pos = []
@@ -547,13 +453,14 @@ def parse_experiences(experience_text: str) -> List[Dict]:
         traceback.print_exc()
         return []
 
-def parse_competences(competence_text: str) -> List[str]:
+def parse_competences(competence_text: str, nlp=None) -> List[str]:
     """
-    Parse la section compétences pour extraire les compétences individuelles.
-    Gère les formats avec catégories (Back-End, Front-End, etc.)
+    Parse la section compétences pour extraire les compétences individuelles
+    en utilisant le modèle NER spaCy entraîné localement pour reconnaître l'entité "COMPETENCE".
     
     Args:
         competence_text: Texte de la section compétences
+        nlp: Modèle spaCy chargé (optionnel, si non fourni sera chargé localement)
         
     Returns:
         Liste de compétences (strings)
@@ -561,97 +468,63 @@ def parse_competences(competence_text: str) -> List[str]:
     if not competence_text:
         return []
     
-    competences = []
-    
     print(f"[DEBUG] Texte compétences à parser: {competence_text[:300]}...")
     
-    # Catégories et mots à ignorer
-    ignore_words = {
-        'COMPETENCES', 'TECHNIQUES', 'SKILLS', 'CLES', 'LANGUES', 'SOFT',
-        'BACK-END', 'FRONT-END', 'BASES', 'CLOUD', 'DEVOPS', 'OUTILS',
-        'Frameworks', 'Langages', 'Web', 'Backend', 'Frontend',
-        'ET', 'DE', 'DES', 'DU', 'LA', 'LE', 'LES', 'EN', 'ET', 'OU',
-        'UNE', 'UN', 'DANS', 'POUR', 'AVEC', 'PAR', 'SUR', 'AU', 'AUX',
-        'CE', 'CET', 'CES', 'SA', 'SES', 'MON', 'MA', 'MES', 'NOTRE',
-        'NOS', 'VOTRE', 'VOS', 'LEUR', 'LEURS', 'QUE', 'QUI', 'DONT',
-        'MASTER', 'PROBLEMES', 'PROBLÈMES', 'TECHNOLOGIES', 'DONNEES', 'DONNÉES', 'RESOLUTION', 'RÉSOLUTION',
-        'INTEGRER', 'INTÉGRER', 'CHERCHE', 'INTERETS', 'INTÉRÊTS', 'TRAVAIL', 'CERTIFIED',
-        'EQUIPE', 'ÉQUIPE', 'STACK', 'PASSIONNEE', 'PASSIONNÉE', 'DYNAMIQUE', 'ACTIONS',
-        'ADAPTABILITE', 'ADAPTABILITÉ', 'APPRENTISSAGE', 'FULL', 'COURANT', 'TEMPS',
-        'PROFIL', 'PROFESSIONNEL', 'PROJETS', 'DEVELOPPEUSE', 'DÉVELOPPEUSE', 'METHODES', 'MÉTHODES',
-        'COMMUNICATION', 'EXPERTISE', 'PRIORISATION', 'CONTRIBUER',
-        'INNOVANTS', 'NATIF', 'CERTIFICATION', 'LIBS', 'DAPPLICATIONS', 'DAPPLICATIONS',
-        'EMERGENTES', 'ÉMERGENTES', 'CERTIFICATIONS', 'IA', 'BLOCKCHAIN',
-        'MOBILES', 'SOURCE', 'ANS', 'DEXPERIENCE', 'DEXPÉRIENCE', 'TOEIC', 'DEQUIPE', 'DÉQUIPE',
-        'GESTION', 'OPEN', 'PRACTITIONER', 'NATIVE', 'REST', 'WEB'
-    }
-    
-    # Diviser en lignes
-    lines = competence_text.split('\n')
-    
-    for line in lines:
-        line = line.strip()
-        if not line or len(line) < 2:
-            continue
-        
-        # Ignorer les lignes qui sont des catégories (se terminent par :)
-        if line.endswith(':') or line.endswith(' :'):
-            print(f"[DEBUG] Ligne ignorée (catégorie): '{line}'")
-            continue
-        
-        # Détecter et gérer le format "Catégorie: Compétence1, Compétence2"
-        if ':' in line:
-            # Extraire uniquement la partie après ":"
-            line = line.split(':', 1)[1].strip()
-            print(f"[DEBUG] Ligne avec ':' nettoyée: '{line}'")
-        
-        # Diviser par des séparateurs (virgules, /, espaces multiples)
-        parts = re.split(r'[,/]|\s{2,}', line)
-        
-        for part in parts:
-            comp = part.strip()
-            # Nettoyer plus agressivement
-            comp = re.sub(r'^[:\.\s\(\)\[\]]+', '', comp)
-            comp = re.sub(r'[:\.\s\(\)\[\]]+$', '', comp)  # Retirer ponctuation à la fin
-            comp = re.sub(r'[^\w\s\-\+\.#]', '', comp)  # Garder seulement alphanumériques et quelques caractères techniques
-            comp = comp.strip()  # Nettoyer après les regex
+    # Utiliser le modèle passé en paramètre ou le charger localement
+    if nlp is None:
+        try:
+            from pathlib import Path
+            model_path = Path("models/competence_ner")
+            if not model_path.exists():
+                raise FileNotFoundError(
+                    f"Modèle NER non trouvé à {model_path}. "
+                    "Veuillez d'abord entraîner le modèle en exécutant: python train_ner_model.py"
+                )
             
-            # Vérifier si c'est valide
-            if comp and len(comp) > 2:
-                # Diviser les compétences composées par des espaces simples
-                # mais garder les compétences composées connues (ex: spring boot, data science)
-                known_compound_skills = {'spring boot', 'data science', 'machine learning',
-                                        'deep learning', 'natural language', 'artificial intelligence',
-                                        'full stack', 'front end', 'back end', 'dev ops'}
-                comp_lower = comp.lower()
-
-                if comp_lower not in known_compound_skills and ' ' in comp:
-                    # Diviser en compétences individuelles
-                    sub_parts = comp.split()
-                    for sub_comp in sub_parts:
-                        sub_comp = sub_comp.strip()
-                        # Retirer le point à la fin s'il y en a un
-                        sub_comp = sub_comp.rstrip('.')
-                        if sub_comp and len(sub_comp) > 2:
-                            sub_comp_upper = sub_comp.upper()
-                            if sub_comp_upper not in ignore_words:
-                                if sub_comp not in competences:
-                                    competences.append(sub_comp)
-                                    print(f"[DEBUG] Compétence trouvée (divisée): '{sub_comp}'")
-                            else:
-                                print(f"[DEBUG] Compétence ignorée (dans ignore_words): '{sub_comp}'")
-                else:
-                    # Garder telle quelle
-                    comp = comp.rstrip('.')  # Retirer le point à la fin
-                    comp_upper = comp.upper()
-                    if comp_upper not in ignore_words:
-                        if comp not in competences:
-                            competences.append(comp)
-                            print(f"[DEBUG] Compétence trouvée: '{comp}'")
-                    else:
-                        print(f"[DEBUG] Compétence ignorée (dans ignore_words): '{comp}'")
+            print(f"[DEBUG] Chargement du modèle NER entraîné depuis {model_path}")
+            nlp = spacy.load(model_path)
+        except Exception as e:
+            print(f"[ERROR] Erreur lors du chargement du modèle NER: {e}")
+            return []
     
-    print(f"[DEBUG] Total compétences extraites: {len(competences)}")
+    # Traiter le texte avec le modèle NER
+    doc = nlp(competence_text)
+    
+    # Mots et patterns à filtrer (sous-titres de section, niveaux de langue, etc.)
+    ignore_patterns = [
+        r'^back-?end\s*:?$', r'^front-?end\s*:?$', r'^bases\s*&\s*cloud\s*:?$', r'^langues\s*:?$', 
+        r'^bases$', r'^cloud$', r'^back-?end$', r'^front-?end$',
+        r'^courant$', r'^professionnel$', r'^maternelle$', r'^intermédiaire$', r'^débutant$',
+        r'^arabe$', r'^français$', r'^anglais$', r'^espagnol$', r'^italien$', r'^allemand$',
+        r'^anglais\s+:\s*$', r'^français\s+:\s*$', r'^arabe\s+:\s*$',
+        r'^\s*:\s*$', r'^-\s*$', r'^•\s*$'
+    ]
+    
+    # Extraire les entités COMPETENCE
+    competences = []
+    for ent in doc.ents:
+        if ent.label_ == "COMPETENCE":
+            comp = ent.text.strip()
+            # Nettoyer la compétence (retirer ponctuation en début/fin)
+            comp = re.sub(r'^[:\.\s\(\)\[\]]+', '', comp)
+            comp = re.sub(r'[:\.\s\(\)\[\]]+$', '', comp)
+            comp = comp.strip()
+            
+            # Filtrer les mots trop courts ou vides
+            if comp and len(comp) > 2 and comp not in competences:
+                # Vérifier si la compétence correspond à un pattern à ignorer
+                should_ignore = False
+                for pattern in ignore_patterns:
+                    if re.match(pattern, comp, re.IGNORECASE):
+                        should_ignore = True
+                        print(f"[DEBUG] Compétence ignorée (pattern): '{comp}'")
+                        break
+                
+                if not should_ignore:
+                    competences.append(comp)
+                    print(f"[DEBUG] Compétence détectée par NER: '{comp}'")
+    
+    print(f"[DEBUG] Total compétences extraites par NER: {len(competences)}")
     return competences
 
 def extract_niveau_etude(formations: List[Dict]) -> str:
@@ -975,32 +848,16 @@ def extract_entities(nlp, text: str) -> Dict[str, List[Dict]]:
     print(f"[DEBUG] Formations extraites: {len(formations)}")
     
     # ============================================================
-    # PARSING DES COMPÉTENCES (APPROCHE HYBRIDE: spaCy + Regex)
+    # PARSING DES COMPÉTENCES (APPROCHE NER ENTRAÎNÉ)
     # ============================================================
     
-    # 1. Extraire les compétences avec spaCy EntityRuler depuis le texte complet
-    doc = nlp(text)
-    spacy_competences = []
-    for ent in doc.ents:
-        if ent.label_ == "COMPETENCE":
-            spacy_competences.append(ent.text.lower())
-    
-    print(f"[DEBUG] Compétences spaCy EntityRuler: {len(spacy_competences)}")
-    
-    # 2. Extraire les compétences depuis la section textuelle avec regex
-    raw_competences = parse_competences(sections["competences"])
-    print(f"[DEBUG] Compétences regex: {len(raw_competences)}")
-    
-    # 3. Fusionner et dédoublonner les compétences des deux approches
-    all_competences = set()
-    for comp in spacy_competences:
-        all_competences.add(comp)
-    for comp in raw_competences:
-        all_competences.add(comp.lower())
+    # Extraire les compétences depuis la section textuelle avec le modèle NER entraîné
+    raw_competences = parse_competences(sections["competences"], nlp)
+    print(f"[DEBUG] Compétences extraites par NER: {len(raw_competences)}")
     
     # Convertir en format attendu par Java
     competences = []
-    for comp in all_competences:
+    for comp in raw_competences:
         competences.append({
             "text": comp,
             "label": "COMPETENCE",
@@ -1008,7 +865,7 @@ def extract_entities(nlp, text: str) -> Dict[str, List[Dict]]:
             "end": len(comp)
         })
     
-    print(f"[DEBUG] Compétences totales (fusionnées): {len(competences)}")
+    print(f"[DEBUG] Compétences totales: {len(competences)}")
     
     # ============================================================
     # NETTOYAGE DES DOUBLONS

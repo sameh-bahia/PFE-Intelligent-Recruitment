@@ -11,6 +11,7 @@ import java.util.List;
 public interface OffreRepository extends JpaRepository<Offre, Long> {
     List<Offre> findByRecruteurId(Long recruteurId);
     List<Offre> findByEstOuverteTrue();
+    long countByEstOuverteTrue();
     List<Offre> findByLieuContaining(String lieu);
     List<Offre> findByDomaine(String domaine);
     List<Offre> findByTypeOffre(TypeOffre typeOffre);

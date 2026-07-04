@@ -35,9 +35,13 @@ public class Utilisateur
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateInscription;
 
+    @Column(nullable = true)
+    private Boolean enabled = true;
+
     // Cette méthode s'exécute automatiquement avant la création en base
     @PrePersist
     protected void onCreate() {
         dateInscription = new Date();
+        enabled = true;
     }
 }

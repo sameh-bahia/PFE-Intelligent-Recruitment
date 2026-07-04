@@ -1,0 +1,284 @@
+# Liste des compétences techniques pour l'entraînement du modèle NER
+# Langages de programmation
+Java
+Python
+JavaScript
+TypeScript
+C#
+C++
+PHP
+Ruby
+Go
+Rust
+Swift
+Kotlin
+Scala
+R
+MATLAB
+SQL
+HTML
+CSS
+XML
+JSON
+YAML
+
+# Frameworks Web Backend
+Spring Boot
+Spring Framework
+Hibernate
+Django
+Flask
+FastAPI
+Express.js
+NestJS
+Laravel
+Symfony
+Ruby on Rails
+ASP.NET Core
+Node.js
+
+# Frameworks Web Frontend
+React
+React.js
+Angular
+Vue.js
+Vue
+Svelte
+Next.js
+Nuxt.js
+Gatsby
+Remix
+Astro
+
+# Bases de données
+PostgreSQL
+MySQL
+MongoDB
+SQLite
+Oracle
+SQL Server
+Redis
+Cassandra
+Elasticsearch
+Firebase
+Firestore
+
+# DevOps & CI/CD
+Docker
+Kubernetes
+Jenkins
+GitLab CI
+GitHub Actions
+Terraform
+Ansible
+Git
+GitHub
+GitLab
+
+# Cloud Providers
+AWS
+Azure
+GCP
+Google Cloud Platform
+IBM Cloud
+Oracle Cloud
+DigitalOcean
+Heroku
+
+# Machine Learning & AI
+TensorFlow
+PyTorch
+Keras
+Scikit-learn
+Pandas
+NumPy
+Matplotlib
+Seaborn
+Jupyter
+HuggingFace
+spaCy
+NLTK
+OpenCV
+PyTorch Lightning
+XGBoost
+LightGBM
+CatBoost
+
+# Deep Learning
+Neural Networks
+CNN
+RNN
+LSTM
+GRU
+Transformer
+BERT
+GPT
+GAN
+Reinforcement Learning
+
+# NLP
+Natural Language Processing
+Text Mining
+Sentiment Analysis
+Named Entity Recognition
+NER
+Text Classification
+Topic Modeling
+Word Embeddings
+BERT
+RoBERTa
+GPT
+T5
+Seq2Seq
+Tokenization
+Transformer
+
+# Data Science
+Data Analysis
+Data Visualization
+Data Engineering
+Data Mining
+Big Data
+Hadoop
+Spark
+Kafka
+Airflow
+Databricks
+
+# Mobile Development
+React Native
+Flutter
+Android
+iOS
+Swift
+Kotlin
+Xamarin
+Ionic
+Cordova
+
+# Testing
+JUnit
+Selenium
+Cypress
+Jest
+Mocha
+Chai
+PyTest
+TestNG
+
+# API
+REST API
+GraphQL
+gRPC
+SOAP
+OpenAPI
+Swagger
+Postman
+
+# Security
+OAuth
+JWT
+SSL/TLS
+Encryption
+Authentication
+Authorization
+Cybersecurity
+
+# Version Control
+Git
+SVN
+Mercurial
+Bitbucket
+GitHub
+GitLab
+
+# Project Management
+Agile
+Scrum
+Kanban
+Jira
+Trello
+Asana
+Confluence
+
+# Monitoring & Logging
+Prometheus
+Grafana
+ELK Stack
+Splunk
+Datadog
+New Relic
+
+# Message Queues
+RabbitMQ
+Apache Kafka
+Redis Pub/Sub
+AWS SQS
+Azure Service Bus
+
+# Search Engines
+Elasticsearch
+Solr
+Lucene
+Algolia
+Meilisearch
+
+# Web Servers
+Nginx
+Apache
+IIS
+Tomcat
+Jetty
+
+# Build Tools
+Maven
+Gradle
+Webpack
+Vite
+Parcel
+Rollup
+Babel
+ESLint
+Prettier
+
+# Design
+Figma
+Sketch
+Adobe XD
+Photoshop
+Illustrator
+
+# Operating Systems
+Linux
+Windows
+macOS
+Unix
+Ubuntu
+Debian
+CentOS
+Red Hat
+
+# Networking
+TCP/IP
+HTTP/HTTPS
+DNS
+DHCP
+VPN
+Firewall
+Load Balancer
+CDN
+
+# Other
+Microservices
+Serverless
+Blockchain
+IoT
+DevOps
+SRE
+GitOps
+MLOps
+AIOps
+FinOps
+Cloud Native
+Edge Computing
+Quantum Computing

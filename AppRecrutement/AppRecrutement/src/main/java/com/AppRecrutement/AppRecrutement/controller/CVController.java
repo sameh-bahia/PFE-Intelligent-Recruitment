@@ -210,11 +210,9 @@ public class CVController {
                     }
                 }
 
-                // Supprimer les anciennes compétences du CV
-                if (savedCV.getCompetences() != null) {
-                    savedCV.getCompetences().clear();
-                    cvService.save(savedCV);
-                }
+                // Supprimer les anciennes compétences du CV (dans la table de jointure)
+                competenceRepository.deleteByCvId(savedCV.getId());
+                savedCV.setCompetences(null);
 
                 // Sauvegarde des compétences extraites
                 @SuppressWarnings("unchecked")

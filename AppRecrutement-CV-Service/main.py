@@ -112,6 +112,9 @@ async def extract_cv(request: CVRequest):
         formations = entities.get("formations", [])  # Formations et diplômes
         niveau_etude = entities.get("niveauEtude", "SANS_EXIGENCE")  # Niveau d'étude
         
+        # DEBUG: Afficher les compétences envoyées au backend Java
+        print(f"[DEBUG] Compétences envoyées au backend Java : {competences}")
+        
         # Retour de la réponse structurée
         return CVResponse(
             competences=competences,

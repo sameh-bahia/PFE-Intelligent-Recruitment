@@ -105,6 +105,12 @@ export default function VoirOffres() {
             <div key={offre.id} className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-lg transition-all duration-300 border border-[#E2E8F0] group">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Building2 className="w-5 h-5 text-[#3B82F6]" />
+                    <h2 className="text-xl font-bold text-[#3B82F6]">
+                      {offre.recruteur?.nomEntreprise || 'Non spécifié'}
+                    </h2>
+                  </div>
                   <h3 className="text-2xl font-semibold text-[#1E293B] mb-3 group-hover:text-[#3B82F6] transition-colors">
                     {offre.titre}
                   </h3>
@@ -137,10 +143,6 @@ export default function VoirOffres() {
                       </div>
                     </div>
                   )}
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Building2 className="w-4 h-4" />
-                    {offre.recruteur?.nomEntreprise || 'Non spécifié'}
-                  </div>
                 </div>
                 <div className="flex flex-col gap-2 ml-6">
                   <button
