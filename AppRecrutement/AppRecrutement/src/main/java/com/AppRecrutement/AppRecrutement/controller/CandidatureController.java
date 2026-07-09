@@ -401,6 +401,34 @@ public class CandidatureController {
                 }
             }
 
+            // Si refusé, envoyer email de refus
+            if (statutStr.equals("REFUSEE")) {
+                try {
+                    Candidature savedCandidature = candidatureService.save(candidature);
+
+                    if (candidature.getCandidat() != null && candidature.getOffre() != null) {
+                        String nomEntreprise = candidature.getOffre().getRecruteur() != null
+                            ? candidature.getOffre().getRecruteur().getNomEntreprise()
+                            : "Notre entreprise";
+
+                        System.out.println("=== DEBUG EMAIL REFUS ===");
+                        System.out.println("Email candidat: " + candidature.getCandidat().getEmail());
+
+                        mailService.sendRejectionEmail(
+                            candidature.getCandidat().getEmail(),
+                            candidature.getCandidat().getNom(),
+                            candidature.getOffre().getTitre(),
+                            nomEntreprise
+                        );
+                    }
+                    return ResponseEntity.ok(savedCandidature);
+                } catch (Exception e) {
+                    System.err.println("Erreur lors du refus: " + e.getMessage());
+                    e.printStackTrace();
+                    return ResponseEntity.badRequest().build();
+                }
+            }
+
             return ResponseEntity.ok(candidatureService.save(candidature));
         }
         return ResponseEntity.badRequest().build();

@@ -2,7 +2,6 @@ package com.AppRecrutement.AppRecrutement.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -50,6 +49,30 @@ public class MailService {
                 typeLabel,
                 lienLabel,
                 lienEntretien,
+                nomEntreprise
+        );
+
+        helper.setText(htmlContent, true);
+
+        mailSender.send(message);
+    }
+
+    public void sendRejectionEmail(
+            String toEmail,
+            String candidatNom,
+            String offreTitre,
+            String nomEntreprise
+    ) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+        helper.setFrom(fromEmail);
+        helper.setTo(toEmail);
+        helper.setSubject("Suite à votre candidature - " + offreTitre);
+
+        String htmlContent = buildRejectionEmailTemplate(
+                candidatNom,
+                offreTitre,
                 nomEntreprise
         );
 
@@ -106,6 +129,55 @@ public class MailService {
                 (typeEntretien.contains("En ligne") ? "<p style='text-align: center;'><a href='" + lienEntretien + "' target='_blank' class='button'>🎥 Rejoindre la réunion</a></p>" : "") +
                 "<p>Veuillez confirmer votre présence en répondant à cet email.</p>" +
                 "<p>Nous avons hâte de vous rencontrer !</p>" +
+                "<p>Cordialement,</p>" +
+                "<p><strong>L'équipe de recrutement - " + nomEntreprise + "</strong></p>" +
+                "</div>" +
+                "<div class='footer'>" +
+                "<p>Ce message a été envoyé automatiquement. Merci de ne pas répondre directement à cet email.</p>" +
+                "</div>" +
+                "</div>" +
+                "</body>" +
+                "</html>";
+    }
+
+    private String buildRejectionEmailTemplate(
+            String candidatNom,
+            String offreTitre,
+            String nomEntreprise
+    ) {
+        return "<!DOCTYPE html>" +
+                "<html>" +
+                "<head>" +
+                "<meta charset='UTF-8'>" +
+                "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+                "<title>Suite à votre candidature</title>" +
+                "<style>" +
+                "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }" +
+                ".container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }" +
+                ".header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }" +
+                ".header h1 { margin: 0; font-size: 28px; font-weight: 600; }" +
+                ".content { padding: 30px; }" +
+                ".greeting { font-size: 18px; margin-bottom: 20px; }" +
+                ".info-box { background-color: #f8f9fa; border-left: 4px solid #f5576c; padding: 15px; margin: 20px 0; border-radius: 5px; }" +
+                ".info-box p { margin: 10px 0; }" +
+                ".info-label { font-weight: 600; color: #f5576c; }" +
+                ".info-value { color: #333; }" +
+                ".footer { text-align: center; padding: 20px; color: #666; font-size: 14px; border-top: 1px solid #e0e0e0; }" +
+                "</style>" +
+                "</head>" +
+                "<body>" +
+                "<div class='container'>" +
+                "<div class='header'>" +
+                "<h1>📝 Suite à votre candidature</h1>" +
+                "</div>" +
+                "<div class='content'>" +
+                "<p class='greeting'>Bonjour <strong>" + candidatNom + "</strong>,</p>" +
+                "<p>Nous vous remercions pour l'intérêt que vous avez porté au poste de <strong>" + offreTitre + "</strong> au sein de notre entreprise.</p>" +
+                "<p>Après avoir examiné attentivement votre candidature, nous avons le regret de vous informer que nous ne pourrons pas donner suite à votre demande à ce stade.</p>" +
+                "<div class='info-box'>" +
+                "<p><span class='info-label'>💡 Conseil :</span> <span class='info-value'>N'hésitez pas à continuer à postuler à nos offres futures qui pourraient correspondre davantage à votre profil.</span></p>" +
+                "</div>" +
+                "<p>Nous vous souhaitons beaucoup de succès dans vos recherches.</p>" +
                 "<p>Cordialement,</p>" +
                 "<p><strong>L'équipe de recrutement - " + nomEntreprise + "</strong></p>" +
                 "</div>" +

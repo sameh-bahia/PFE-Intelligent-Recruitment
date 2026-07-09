@@ -20,6 +20,7 @@ import MonProfilRecruteur from './pages/profil/MonProfilRecruteur';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import UsersManagement from './pages/admin/UsersManagement';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import DashboardLayout from './components/layout/DashboardLayout';
 
 /**
  * Composant App - Configuration des routes React Router
@@ -96,13 +97,17 @@ function App() {
         {/* Routes Admin - PROTÉGÉES ADMIN */}
         <Route path="/admin/dashboard" element={
           <ProtectedRoute allowedRoles={['ADMIN']}>
-            <AdminDashboard />
+            <DashboardLayout role="ADMIN">
+              <AdminDashboard />
+            </DashboardLayout>
           </ProtectedRoute>
         } />
         
         <Route path="/admin/users" element={
           <ProtectedRoute allowedRoles={['ADMIN']}>
-            <UsersManagement />
+            <DashboardLayout role="ADMIN">
+              <UsersManagement />
+            </DashboardLayout>
           </ProtectedRoute>
         } />
       </Routes>

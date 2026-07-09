@@ -20,7 +20,9 @@ export default function Login() {
       localStorage.setItem('token', token);
       localStorage.setItem('userRole', role);
 
-      if (role === 'ROLE_CANDIDAT') {
+      if (role === 'ROLE_ADMIN') {
+        navigate('/admin/dashboard');
+      } else if (role === 'ROLE_CANDIDAT') {
         navigate('/dashboard/candidat');
       } else if (role === 'ROLE_RECRUTEUR') {
         navigate('/dashboard/recruteur');

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Briefcase, Check, X, User, Lock, Unlock, Eye, Video } from 'lucide-react';
+import { Users, Briefcase, Check, X, User, Lock, Unlock, Eye, Video, Info } from 'lucide-react';
 import api from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
 
@@ -364,7 +364,15 @@ export default function CandidaturesRecues() {
                         Candidat
                       </th>
                       <th className="w-32 px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Score IA
+                        <div className="flex items-center gap-2">
+                          Score Relatif
+                          <div className="relative group">
+                            <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                            <div className="absolute left-0 top-full mt-2 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 shadow-lg">
+                              Score calculé par rapport aux autres candidats de cette offre
+                            </div>
+                          </div>
+                        </div>
                       </th>
                       <th className="w-28 px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         Note Quiz

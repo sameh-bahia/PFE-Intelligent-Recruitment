@@ -5,7 +5,9 @@ import {
   FileText,
   LogOut,
   Building2,
-  User
+  User,
+  Users,
+  Settings
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -29,7 +31,13 @@ export default function Sidebar({ role = 'CANDIDAT' }: SidebarProps) {
     { name: 'Mon Profil', path: '/dashboard/recruteur/profil', icon: User },
   ];
 
-  const links = role === 'CANDIDAT' ? candidateLinks : recruiterLinks;
+  const adminLinks = [
+    { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+    { name: 'Utilisateurs', path: '/admin/users', icon: Users },
+    { name: 'Paramètres', path: '/admin/settings', icon: Settings },
+  ];
+
+  const links = role === 'CANDIDAT' ? candidateLinks : role === 'RECRUTEUR' ? recruiterLinks : adminLinks;
 
   const handleLogout = () => {
     localStorage.removeItem('token');

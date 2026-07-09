@@ -15,6 +15,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -80,6 +85,41 @@ public class AdminDashboardController {
 
         StatsDTO stats = new StatsDTO(totalUsers, totalOffres, totalCandidatures, totalEntretiens);
         return ResponseEntity.ok(stats);
+    }
+
+    /**
+     * GET /api/admin/registrations-by-day
+     * Retourne le nombre d'inscriptions par jour pour les 30 derniers jours
+     */
+    @GetMapping("/registrations-by-day")
+    public ResponseEntity<List<Map<String, Object>>> getRegistrationsByDay() {
+        List<Map<String, Object>> registrations = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        for (int i = 29; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            String dateString = date.format(formatter);
+            
+            // Compter les utilisateurs inscrits ce jour-là
+            long count = utilisateurRepository.findAll().stream()
+                .filter(u -> u.getDateInscription() != null)
+                .filter(u -> {
+                    LocalDate inscriptionDate = u.getDateInscription().toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+                    return inscriptionDate.equals(date);
+                })
+                .count();
+
+            Map<String, Object> entry = Map.of(
+                "date", dateString,
+                "count", count
+            );
+            registrations.add(entry);
+        }
+
+        return ResponseEntity.ok(registrations);
     }
 
     /**

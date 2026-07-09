@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Briefcase, Users, TrendingUp, Edit, Trash2, Plus } from 'lucide-react';
+import { Briefcase, Users, TrendingUp, Edit, Trash2, Plus, MapPin, DollarSign, Calendar } from 'lucide-react';
 import api from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
 
@@ -168,104 +168,78 @@ export default function ListeOffres() {
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-[#E2E8F0]">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Titre
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Type d'offre
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Sous-domaine
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Salaire
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Lieu
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Compétences
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Statut
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Candidats
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Date de création
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {offres.map((offre) => (
-                <tr key={offre.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#1E293B]">
-                    {offre.titre}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {offre.typeOffre}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {offre.sousDomaineIT}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {offre.salaire}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {offre.lieu}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {offre.competences && offre.competences.length > 0 ? (
-                      <div className="flex flex-wrap gap-1">
+        <div className="grid grid-cols-1 gap-6">
+          {offres.map((offre) => (
+            <div key={offre.id} className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-lg transition-all duration-300 border border-[#E2E8F0] group">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="text-2xl font-semibold text-[#1E293B] group-hover:text-[#3B82F6] transition-colors">
+                      {offre.titre}
+                    </h3>
+                    {getStatutBadge(offre.statut)}
+                  </div>
+                  <p className="text-gray-600 mb-4 line-clamp-2">
+                    {offre.description}
+                  </p>
+                  <div className="flex flex-wrap gap-3 mb-4">
+                    <span className="px-3 py-1.5 bg-[#3B82F6]/10 text-[#3B82F6] rounded-full text-sm font-medium flex items-center gap-1">
+                      <Briefcase className="w-4 h-4" />
+                      {offre.typeOffre}
+                    </span>
+                    <span className="px-3 py-1.5 bg-[#10B981]/10 text-[#10B981] rounded-full text-sm font-medium flex items-center gap-1">
+                      <DollarSign className="w-4 h-4" />
+                      {offre.salaire}
+                    </span>
+                    <span className="px-3 py-1.5 bg-[#334155]/10 text-[#334155] rounded-full text-sm font-medium flex items-center gap-1">
+                      <MapPin className="w-4 h-4" />
+                      {offre.lieu}
+                    </span>
+                    <span className="px-3 py-1.5 bg-[#F59E0B]/10 text-[#F59E0B] rounded-full text-sm font-medium flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      {formatDate(offre.dateCreation)}
+                    </span>
+                  </div>
+                  {offre.competences && offre.competences.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-sm font-medium text-gray-700 mb-2">Compétences requises :</p>
+                      <div className="flex flex-wrap gap-2">
                         {offre.competences.map((comp, index) => (
                           <span key={index} className="px-2 py-1 bg-[#6366F1]/10 text-[#6366F1] rounded-full text-xs font-medium">
                             {comp.nom}
                           </span>
                         ))}
                       </div>
-                    ) : (
-                      <span className="text-gray-400">Aucune</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    {getStatutBadge(offre.statut)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {offre.candidats || 0}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {formatDate(offre.dateCreation)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-3">
-                      <Link
-                        to={`/dashboard/recruteur/offres/modifier/${offre.id}`}
-                        className="text-[#3B82F6] hover:text-[#2563EB] transition-colors"
-                        title="Modifier"
-                      >
-                        <Edit className="w-5 h-5" />
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(offre.id)}
-                        className="text-red-600 hover:text-red-700 transition-colors"
-                        title="Supprimer"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  )}
+                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <Users className="w-4 h-4" />
+                      {offre.candidats || 0} candidat(s)
+                    </span>
+                    <span className="text-gray-400">•</span>
+                    <span>{offre.sousDomaineIT}</span>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2 ml-6">
+                  <Link
+                    to={`/dashboard/recruteur/offres/modifier/${offre.id}`}
+                    className="px-4 py-2 bg-[#3B82F6] text-white rounded-lg hover:bg-[#2563EB] transition-colors font-medium flex items-center gap-2"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Modifier
+                  </Link>
+                  <button
+                    onClick={() => handleDelete(offre.id)}
+                    className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-medium flex items-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Supprimer
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </MainLayout>
