@@ -14,6 +14,7 @@ public interface CandidatureRepository extends JpaRepository<Candidature, Long> 
     List<Candidature> findByCandidatId(Long candidatId);
     List<Candidature> findByOffreId(Long offreId);
     List<Candidature> findByStatut(StatutCandidature statut);
+    long countByStatut(StatutCandidature statut);
     List<Candidature> findByOffreIdAndCandidatId(Long offreId, Long candidatId);
     //Cette requête SQL/JPA: "Sélectionne toutes les candidatures où l'offre appartient au recruteur avec l'ID donné"
     // HETHIKA ZEDNEHA BECH KOL RECRUTEURE YAL9A LES CONDIDATURES MTE3OU  MCH LIF FEL BD KOL 

@@ -1,4 +1,18 @@
-**/node_modules/ 
-**/target/ 
-**/.idea/ 
-**/.vscode/ 
+# Fichiers temporaires mta3 Python
+__pycache__/
+*.pyc
+
+# Les CVs et fichiers sensibles
+uploads/cvs/
+
+# Les dossiers de dépendances et de build
+/node_modules/
+/target/
+
+# Configuration de l'IDE
+.idea/
+.vscode/
+
+# Fichiers système
+.DS_Store
+.env

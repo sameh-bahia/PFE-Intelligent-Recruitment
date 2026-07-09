@@ -70,13 +70,17 @@ public class Offre {
     private List<Candidature> candidatures;
 
     @JsonIgnoreProperties("offres")
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "offre_competence",
         joinColumns = @JoinColumn(name = "offre_id"),
         inverseJoinColumns = @JoinColumn(name = "competence_id")
     )
     private List<Competence> competences;
+
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "quiz_id")
+    private Quiz quiz;
 
     public Offre(String titre, String description, String lieu, TypeOffre typeOffre, SousDomaineIT sousDomaineIT, Double salaireMin, Double salaireMax, NiveauEtude niveauEtudeRequis) {
         this.titre = titre;

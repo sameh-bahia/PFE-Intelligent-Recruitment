@@ -18,7 +18,7 @@ export default function Login() {
       const { token, role } = response.data;
 
       localStorage.setItem('token', token);
-      localStorage.setItem('role', role);
+      localStorage.setItem('userRole', role);
 
       if (role === 'ROLE_CANDIDAT') {
         navigate('/dashboard/candidat');

@@ -8,7 +8,9 @@ public class CandidatureDTO {
     private String lettreMotivation;
     private Double scoreCompatibilite;
     private Double scoreRelatif;
+    private Integer scoreQuiz;
     private String statut;
+    private String lienEntretien;
     private OffreSimpleDTO offre;
     private CandidatSimpleDTO candidat;
 
@@ -52,6 +54,22 @@ public class CandidatureDTO {
 
     public void setScoreRelatif(Double scoreRelatif) {
         this.scoreRelatif = scoreRelatif;
+    }
+
+    public Integer getScoreQuiz() {
+        return scoreQuiz;
+    }
+
+    public void setScoreQuiz(Integer scoreQuiz) {
+        this.scoreQuiz = scoreQuiz;
+    }
+
+    public String getLienEntretien() {
+        return lienEntretien;
+    }
+
+    public void setLienEntretien(String lienEntretien) {
+        this.lienEntretien = lienEntretien;
     }
 
     public String getStatut() {

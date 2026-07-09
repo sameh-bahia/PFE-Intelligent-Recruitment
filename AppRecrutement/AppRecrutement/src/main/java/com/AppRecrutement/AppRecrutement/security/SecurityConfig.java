@@ -38,19 +38,19 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/candidats/**", "/api/recruteurs/**").permitAll()
+                        // Endpoint temporaire pour créer admin (PFE only)
+                        .requestMatchers("/api/admin/create-admin").permitAll()
                         // GET /api/offres: Public (les candidats peuvent voir les offres)
                         // POST/PUT/DELETE /api/offres: Auth requis (seuls les recruteurs peuvent créer/modifier/supprimer)
                         .requestMatchers(HttpMethod.GET, "/api/offres/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/offres/with-quiz").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/offres/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/offres/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/offres/**").authenticated()
                         // GET /api/candidatures: Public pour voir les candidatures (si nécessaire)
                         // POST /api/candidatures: Auth requis pour créer une candidature
                         // PUT /api/candidatures: Auth requis pour mettre à jour le statut
-                        .requestMatchers(HttpMethod.GET, "/api/candidatures/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/candidatures/**").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/candidatures/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/candidatures/**").authenticated()
+                        .requestMatchers("/api/candidatures/**").authenticated()
                         // POST /api/cvs/upload: Auth requis pour uploader un CV
                         // GET /api/cvs/mon-cv: Auth requis pour voir son CV
                         // GET /api/cvs/download/**: Auth requis pour télécharger/voir un CV
@@ -63,6 +63,15 @@ public class SecurityConfig {
                         // GET /api/recruteurs/mon-profil: Auth requis pour voir son profil
                         .requestMatchers(HttpMethod.GET, "/api/candidats/mon-profil").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/recruteurs/mon-profil").authenticated()
+                        // Quiz endpoints: Auth requis pour les recruteurs
+                        .requestMatchers(HttpMethod.POST, "/api/quiz/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/quiz/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/quiz/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/quiz/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/questions").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/options").authenticated()
+                        // Admin endpoints: Seuls les admins peuvent y accéder
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

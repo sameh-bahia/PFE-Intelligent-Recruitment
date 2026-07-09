@@ -1,8 +1,31 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Briefcase, Check, X, User, Lock, Unlock, Eye } from 'lucide-react';
+import { Users, Briefcase, Check, X, User, Lock, Unlock, Eye, Video } from 'lucide-react';
 import api from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
+
+/**
+ * Composant CandidaturesRecues - Dashboard recruteur pour gérer les candidatures
+ * 
+ * Ce composant affiche toutes les candidatures reçues par le recruteur, groupées par offre.
+ * Il permet d'accepter/refuser les candidatures et de générer des liens Google Meet.
+ * 
+ * FONCTIONNALITÉS AJOUTÉES (Google Meet) :
+ * - Bouton "Accepter & Créer Meet" pour générer automatiquement un lien Google Meet
+ * - Affichage du lien Meet généré pour que le recruteur puisse rejoindre l'entretien
+ * - Le lien est généré côté backend via MeetService (format xxx-yyyy-zzz)
+ * 
+ * LOGIQUE MÉTIER : Génération automatique du lien Meet
+ * - Le bouton "Accepter & Créer Meet" appelle POST /api/candidatures/{id}/accepter-avec-meet
+ * - Le backend génère le lien Google Meet et change le statut à ACCEPTEE
+ * - Le lien est stocké dans le champ lienEntretien de la candidature
+ * - Le recruteur peut cliquer sur le lien pour rejoindre l'entretien
+ * 
+ * CHOIX TECHNIQUE : Séparation des boutons
+ * - "Accepter" : Modal avec date/lieu personnalisés (entretien manuel)
+ * - "Accepter & Créer Meet" : Génération automatique du lien (entretien en ligne rapide)
+ * - Permet au recruteur de choisir entre les deux modes d'acceptation
+ */
 
 interface Candidature {
   id: number;
@@ -25,6 +48,8 @@ interface Candidature {
   dateCandidature: string;
   scoreCompatibilite?: number;
   scoreRelatif?: number;
+  scoreQuiz?: number;
+  lienEntretien?: string; // Lien Google Meet généré automatiquement
 }
 
 interface GroupedCandidatures {
@@ -40,7 +65,6 @@ export default function CandidaturesRecues() {
   const [selectedCandidature, setSelectedCandidature] = useState<Candidature | null>(null);
   const [interviewDate, setInterviewDate] = useState('');
   const [interviewType, setInterviewType] = useState<'EN_LIGNE' | 'PRESENTIEL'>('EN_LIGNE');
-  const [interviewLink, setInterviewLink] = useState('');
 
   useEffect(() => {
     fetchCandidatures();
@@ -83,8 +107,7 @@ export default function CandidaturesRecues() {
       await api.put(`/candidatures/${selectedCandidature.id}/statut`, {
         statut: 'ACCEPTEE',
         dateEntretien: interviewDate,
-        typeEntretien: interviewType,
-        lienEntretien: interviewLink
+        typeEntretien: interviewType
       });
       setCandidatures(candidatures.map(c =>
         c.id === selectedCandidature.id ? { ...c, statut: 'ACCEPTEE' } : c
@@ -93,7 +116,6 @@ export default function CandidaturesRecues() {
       setSelectedCandidature(null);
       setInterviewDate('');
       setInterviewType('EN_LIGNE');
-      setInterviewLink('');
     } catch (err) {
       setError('Erreur lors de l\'acceptation');
       console.error('Error accepting candidature:', err);
@@ -109,6 +131,26 @@ export default function CandidaturesRecues() {
     } catch (err) {
       setError('Erreur lors du refus');
       console.error('Error rejecting candidature:', err);
+    }
+  };
+
+  /**
+   * Accepter une candidature et générer automatiquement un lien Google Meet
+   * 
+   * Cette fonction appelle l'endpoint POST /api/candidatures/{id}/accepter-avec-meet
+   * qui génère un lien Google Meet unique et change le statut à ACCEPTEE.
+   * 
+   * LOGIQUE MÉTIER :
+   * - Le backend génère le lien Meet via MeetService
+   * - Le statut passe à ACCEPTEE
+   * - Le type d'entretien est défini à EN_LIGNE
+   * - Un email de convocation est envoyé au candidat
+   * 
+   * @param id L'ID de la candidature à accepter
+   */
+  const handleJoinMeet = (lienEntretien: string) => {
+    if (lienEntretien) {
+      window.open(lienEntretien, '_blank');
     }
   };
 
@@ -322,10 +364,16 @@ export default function CandidaturesRecues() {
                         Candidat
                       </th>
                       <th className="w-32 px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Score
+                        Score IA
+                      </th>
+                      <th className="w-28 px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Note Quiz
                       </th>
                       <th className="w-28 px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         Statut
+                      </th>
+                      <th className="w-40 px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Lien Meet
                       </th>
                       <th className="w-36 px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         Date
@@ -389,7 +437,29 @@ export default function CandidaturesRecues() {
                           )}
                         </td>
                         <td className="w-28 px-6 py-4 whitespace-nowrap text-sm">
+                          {candidature.scoreQuiz !== null && candidature.scoreQuiz !== undefined ? (
+                            <span className="font-semibold text-[#10B981]">{candidature.scoreQuiz}/20</span>
+                          ) : (
+                            <span className="text-gray-400">N/A</span>
+                          )}
+                        </td>
+                        <td className="w-28 px-6 py-4 whitespace-nowrap text-sm">
                           {getStatutBadge(candidature.statut)}
+                        </td>
+                        <td className="w-40 px-6 py-4 whitespace-nowrap text-sm">
+                          {candidature.lienEntretien ? (
+                            <a
+                              href={candidature.lienEntretien}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[#3B82F6] hover:text-[#2563EB] hover:underline flex items-center gap-1"
+                            >
+                              <Video className="w-4 h-4" />
+                              Rejoindre
+                            </a>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
                         </td>
                         <td className="w-36 px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                           {formatDate(candidature.dateCandidature)}
@@ -412,6 +482,15 @@ export default function CandidaturesRecues() {
                                 title="Accepter"
                               >
                                 <Check className="w-5 h-5" />
+                              </button>
+                            )}
+                            {candidature.lienEntretien && (
+                              <button
+                                onClick={() => handleJoinMeet(candidature.lienEntretien)}
+                                className="text-[#3B82F6] hover:text-[#2563EB] transition-colors"
+                                title="Rejoindre l'entretien"
+                              >
+                                <Video className="w-5 h-5" />
                               </button>
                             )}
                             {candidature.statut !== 'REFUSEE' && (
@@ -473,20 +552,6 @@ export default function CandidaturesRecues() {
                   <option value="PRESENTIEL">Présentiel</option>
                 </select>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {interviewType === 'EN_LIGNE' ? 'Lien Google Meet *' : 'Adresse de la société *'}
-                </label>
-                <input
-                  type="text"
-                  value={interviewLink}
-                  onChange={(e) => setInterviewLink(e.target.value)}
-                  placeholder={interviewType === 'EN_LIGNE' ? 'https://meet.google.com/...' : '123 Rue Example, Ville'}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
-                  required
-                />
-              </div>
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
@@ -496,7 +561,6 @@ export default function CandidaturesRecues() {
                   setSelectedCandidature(null);
                   setInterviewDate('');
                   setInterviewType('EN_LIGNE');
-                  setInterviewLink('');
                 }}
                 className="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium"
               >

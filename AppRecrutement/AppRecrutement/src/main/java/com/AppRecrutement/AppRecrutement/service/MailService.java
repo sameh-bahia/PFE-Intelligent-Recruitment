@@ -101,8 +101,9 @@ public class MailService {
                 "<div class='info-box'>" +
                 "<p><span class='info-label'>📅 Date et heure :</span> <span class='info-value'>" + dateEntretien + "</span></p>" +
                 "<p><span class='info-label'>📍 Type d'entretien :</span> <span class='info-value'>" + typeEntretien + "</span></p>" +
-                "<p><span class='info-label'>" + (typeEntretien.contains("En ligne") ? "🔗" : "🏢") + " " + lienLabel + " :</span> <span class='info-value'>" + lienEntretien + "</span></p>" +
+                "<p><span class='info-label'>" + (typeEntretien.contains("En ligne") ? "🔗" : "🏢") + " " + lienLabel + " :</span> <span class='info-value'><a href='" + lienEntretien + "' target='_blank' style='color: #1a73e8; text-decoration: underline;'>" + lienEntretien + "</a></span></p>" +
                 "</div>" +
+                (typeEntretien.contains("En ligne") ? "<p style='text-align: center;'><a href='" + lienEntretien + "' target='_blank' class='button'>🎥 Rejoindre la réunion</a></p>" : "") +
                 "<p>Veuillez confirmer votre présence en répondant à cet email.</p>" +
                 "<p>Nous avons hâte de vous rencontrer !</p>" +
                 "<p>Cordialement,</p>" +

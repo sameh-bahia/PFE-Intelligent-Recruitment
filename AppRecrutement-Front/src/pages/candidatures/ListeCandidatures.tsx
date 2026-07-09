@@ -1,8 +1,30 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FileText, Trash2, ArrowRight, Building2, Briefcase, MapPin } from 'lucide-react';
+import { FileText, Trash2, ArrowRight, Building2, Briefcase, MapPin, Video } from 'lucide-react';
 import api from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
+
+/**
+ * Composant ListeCandidatures - Dashboard candidat pour suivre ses candidatures
+ * 
+ * Ce composant affiche toutes les candidatures du candidat connecté.
+ * Il permet de voir le statut de chaque candidature et de rejoindre les entretiens.
+ * 
+ * FONCTIONNALITÉS AJOUTÉES (Google Meet) :
+ * - Affichage du bouton "Rejoindre l'entretien" quand le statut est ACCEPTEE
+ * - Le bouton apparaît uniquement si lienEntretien existe
+ * - Permet au candidat de rejoindre directement l'entretien Google Meet
+ * 
+ * LOGIQUE MÉTIER : Affichage conditionnel du bouton
+ * - Le bouton n'apparaît que si statut === 'ACCEPTEE' ET lienEntretien existe
+ * - Le lien est généré par le recruteur via "Accepter & Créer Meet"
+ * - Le candidat peut cliquer pour rejoindre l'entretien sans chercher dans ses emails
+ * 
+ * CHOIX TECHNIQUE : Bouton dans la colonne Actions
+ * - Le bouton est placé à côté du bouton "Supprimer"
+ * - Utilisation de l'icône Video pour indiquer qu'il s'agit d'une visioconférence
+ * - target="_blank" pour ouvrir le lien dans un nouvel onglet
+ */
 
 interface StatusBadgeProps {
   statut: string;
@@ -139,13 +161,26 @@ export default function ListeCandidatures() {
                     {candidature.datePostulation ? new Date(candidature.datePostulation).toLocaleDateString('fr-FR') : 'Non spécifié'}
                   </td>
                   <td className="px-6 py-4">
-                    <button
-                      onClick={() => handleDelete(candidature.id)}
-                      className="flex items-center gap-2 px-3 py-1.5 text-[#EF4444] hover:bg-[#EF4444]/10 rounded-lg transition-colors font-medium text-sm"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Supprimer
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {candidature.statut === 'ACCEPTEE' && candidature.lienEntretien && (
+                        <a
+                          href={candidature.lienEntretien}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-3 py-1.5 text-[#3B82F6] bg-[#3B82F6]/10 hover:bg-[#3B82F6]/20 rounded-lg transition-colors font-medium text-sm"
+                        >
+                          <Video className="w-4 h-4" />
+                          Rejoindre
+                        </a>
+                      )}
+                      <button
+                        onClick={() => handleDelete(candidature.id)}
+                        className="flex items-center gap-2 px-3 py-1.5 text-[#EF4444] hover:bg-[#EF4444]/10 rounded-lg transition-colors font-medium text-sm"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Supprimer
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

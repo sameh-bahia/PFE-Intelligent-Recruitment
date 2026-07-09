@@ -1,15 +1,18 @@
 package com.AppRecrutement.AppRecrutement.controller;
 
+import com.AppRecrutement.AppRecrutement.dto.OffreWithQuizDTO;
 import com.AppRecrutement.AppRecrutement.model.Candidat;
 import com.AppRecrutement.AppRecrutement.model.Competence;
 import com.AppRecrutement.AppRecrutement.model.NiveauEtude;
 import com.AppRecrutement.AppRecrutement.model.Offre;
+import com.AppRecrutement.AppRecrutement.model.Quiz;
 import com.AppRecrutement.AppRecrutement.model.Recruteur;
 import com.AppRecrutement.AppRecrutement.model.SousDomaineIT;
 import com.AppRecrutement.AppRecrutement.model.TypeOffre;
 import com.AppRecrutement.AppRecrutement.repository.CandidatRepository;
 import com.AppRecrutement.AppRecrutement.repository.CompetenceRepository;
 import com.AppRecrutement.AppRecrutement.repository.OffreRepository;
+import com.AppRecrutement.AppRecrutement.repository.QuizRepository;
 import com.AppRecrutement.AppRecrutement.repository.RecruteurRepository;
 import com.AppRecrutement.AppRecrutement.service.OffreService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +40,9 @@ public class OffreController {
 
     @Autowired
     private OffreRepository offreRepository;
+
+    @Autowired
+    private QuizRepository quizRepository;
 
     /**
      * Récupère toutes les offres d'emploi.
@@ -96,6 +102,55 @@ public class OffreController {
         return offreService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Récupère une offre par son ID avec le quiz inclus.
+     * @param id Identifiant de l'offre
+     * @return Offre trouvée avec quiz ou 404 si non trouvée
+     */
+    @GetMapping("/{id}/with-quiz")
+    public ResponseEntity<Offre> getOffreWithQuiz(@PathVariable Long id) {
+        java.util.Optional<Offre> offreOpt = offreRepository.findByIdWithQuiz(id);
+        if (offreOpt.isPresent()) {
+            return ResponseEntity.ok(offreOpt.get());
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    /**
+     * TEMPORAIRE : Lier un quiz existant à une offre existante
+     * Endpoint temporaire pour tester le flow candidat
+     * @param offreId ID de l'offre
+     * @param quizId ID du quiz
+     * @return Offre mise à jour
+     */
+    @PostMapping("/{offreId}/link-quiz/{quizId}")
+    public ResponseEntity<Offre> linkQuizToOffre(@PathVariable Long offreId, @PathVariable Long quizId) {
+        Offre offre = offreRepository.findById(offreId)
+                .orElseThrow(() -> new RuntimeException("Offre non trouvée"));
+        Quiz quiz = quizRepository.findById(quizId)
+                .orElseThrow(() -> new RuntimeException("Quiz non trouvé"));
+        
+        offre.setQuiz(quiz);
+        quiz.setOffre(offre);
+        offreRepository.save(offre);
+        quizRepository.save(quiz);
+        
+        return ResponseEntity.ok(offre);
+    }
+
+    /**
+     * Crée une nouvelle offre avec son quiz complet (questions + options) en une seule requête
+     * @param dto Le DTO contenant l'offre et le quiz imbriqué
+     * @param authentication Authentification JWT du recruteur connecté
+     * @return L'offre créée avec son quiz
+     */
+    @PostMapping("/with-quiz")
+    public ResponseEntity<Offre> createOffreWithQuiz(@RequestBody OffreWithQuizDTO dto, Authentication authentication) {
+        String recruteurEmail = authentication.getName();
+        Offre offre = offreService.createOffreWithQuiz(dto, recruteurEmail);
+        return ResponseEntity.ok(offre);
     }
 
     /**

@@ -50,6 +50,9 @@ public class CandidatureController {
     @Autowired
     private com.AppRecrutement.AppRecrutement.service.MailService mailService;
 
+    @Autowired
+    private com.AppRecrutement.AppRecrutement.service.MeetService meetService;
+
     /**
      * Récupère toutes les candidatures.
      * @return Liste de toutes les candidatures
@@ -78,10 +81,16 @@ public class CandidatureController {
         dto.setDatePostulation(candidature.getDatePostulation());
         dto.setLettreMotivation(candidature.getLettreMotivation());
         dto.setScoreCompatibilite(candidature.getScoreCompatibilite());
+        dto.setScoreQuiz(candidature.getScoreQuiz());
+        dto.setLienEntretien(candidature.getLienEntretien());
         System.out.println("=== DEBUG CONVERT TO DTO ===");
         System.out.println("Candidature ID: " + candidature.getId());
         System.out.println("Score from entity: " + candidature.getScoreCompatibilite());
+        System.out.println("Score Quiz from entity: " + candidature.getScoreQuiz());
+        System.out.println("Lien Entretien from entity: " + candidature.getLienEntretien());
         System.out.println("Score in DTO: " + dto.getScoreCompatibilite());
+        System.out.println("Score Quiz in DTO: " + dto.getScoreQuiz());
+        System.out.println("Lien Entretien in DTO: " + dto.getLienEntretien());
         dto.setStatut(candidature.getStatut() != null ? candidature.getStatut().name() : null);
 
         if (candidature.getOffre() != null) {
@@ -333,13 +342,12 @@ public class CandidatureController {
         String statutStr = (String) payload.get("statut");
         if (statutStr != null) {
             candidature.setStatut(StatutCandidature.valueOf(statutStr));
-            
+
             // Si accepté avec détails d'entretien
             if (statutStr.equals("ACCEPTEE") && payload.containsKey("dateEntretien")) {
                 String dateEntretienStr = (String) payload.get("dateEntretien");
                 String typeEntretien = (String) payload.get("typeEntretien");
-                String lienEntretien = (String) payload.get("lienEntretien");
-                
+
                 try {
                     if (dateEntretienStr != null && !dateEntretienStr.isEmpty()) {
                         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
@@ -347,36 +355,63 @@ public class CandidatureController {
                         candidature.setDateEntretien(dateEntretien);
                     }
                     candidature.setTypeEntretien(typeEntretien);
-                    candidature.setLienEntretien(lienEntretien);
-                    
+
+                    // Générer automatiquement le lien Google Meet si entretien en ligne
+                    String lienMeet = null;
+                    if ("EN_LIGNE".equals(typeEntretien)) {
+                        lienMeet = meetService.genererLienMeet();
+                        candidature.setLienEntretien(lienMeet);
+                        System.out.println("=== DEBUG LIEN MEET ===");
+                        System.out.println("Lien généré: " + lienMeet);
+                        System.out.println("Lien dans candidature: " + candidature.getLienEntretien());
+                    }
+
+                    // Sauvegarder la candidature AVANT d'envoyer l'email
+                    Candidature savedCandidature = candidatureService.save(candidature);
+                    System.out.println("=== DEBUG SAUVEGARDE ===");
+                    System.out.println("Candidature ID: " + savedCandidature.getId());
+                    System.out.println("Lien après sauvegarde: " + savedCandidature.getLienEntretien());
+
                     // Envoyer l'email de convocation seulement si la date est valide
+                    // Utiliser les relations de l'entité originale (avant sauvegarde) car LAZY
                     if (candidature.getCandidat() != null && candidature.getOffre() != null && candidature.getDateEntretien() != null) {
-                        String nomEntreprise = candidature.getOffre().getRecruteur() != null 
-                            ? candidature.getOffre().getRecruteur().getNomEntreprise() 
+                        String nomEntreprise = candidature.getOffre().getRecruteur() != null
+                            ? candidature.getOffre().getRecruteur().getNomEntreprise()
                             : "Notre entreprise";
-                        
+
+                        System.out.println("=== DEBUG EMAIL ===");
+                        System.out.println("Email candidat: " + candidature.getCandidat().getEmail());
+                        System.out.println("Lien Meet pour email: " + lienMeet);
+
                         mailService.sendInterviewInvitation(
                             candidature.getCandidat().getEmail(),
                             candidature.getCandidat().getNom(),
                             candidature.getOffre().getTitre(),
                             candidature.getDateEntretien(),
                             typeEntretien,
-                            lienEntretien,
+                            lienMeet,
                             nomEntreprise
                         );
                     }
+                    return ResponseEntity.ok(savedCandidature);
                 } catch (Exception e) {
-                    System.err.println("Erreur lors de l'envoi de l'email: " + e.getMessage());
+                    System.err.println("Erreur lors de l'acceptation: " + e.getMessage());
                     e.printStackTrace();
+                    return ResponseEntity.badRequest().build();
                 }
             }
-            
+
             return ResponseEntity.ok(candidatureService.save(candidature));
         }
         return ResponseEntity.badRequest().build();
     }
 
     /**
+     * Accepte une candidature et génère automatiquement un lien Google Meet
+     * 
+     * Cet endpoint permet au recruteur d'accepter une candidature et de générer
+     * automatiquement un lien Google Meet pour l'entretien. Le lien est généré
+     * par MeetService et stocké dans le champ lienEntretien de la candidature.
      * Supprime une candidature par son ID.
      * @param id Identifiant de la candidature à supprimer
      * @return 204 si supprimée, 404 si non trouvée

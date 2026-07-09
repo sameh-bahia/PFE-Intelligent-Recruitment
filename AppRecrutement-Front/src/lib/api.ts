@@ -13,7 +13,11 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    if (token) {
+    // Ne pas ajouter le token pour les endpoints d'authentification (login/register)
+    const isAuthEndpoint = config.url?.includes('/auth/login') || 
+                          config.url?.includes('/auth/register');
+    
+    if (token && !isAuthEndpoint) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -27,11 +31,20 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Ne déconnecter que si l'erreur n'est pas une erreur de création/modification
+    // Permet de voir l'erreur dans le frontend sans être déconnecté
     if (error.response && error.response.status === 401) {
-      // Token expiré ou invalide - vider le localStorage et rediriger vers login
-      localStorage.removeItem('token');
-      localStorage.removeItem('role');
-      window.location.href = '/login';
+      console.error('Erreur 401 détectée:', error.config?.url, error.response?.data);
+      // Ne déconnecter automatiquement que pour les requêtes de navigation
+      // Pas pour les requêtes POST/PUT/DELETE
+      const isNavigationRequest = error.config?.method === 'get' || 
+                                  error.config?.method === undefined;
+      
+      if (isNavigationRequest) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userRole');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

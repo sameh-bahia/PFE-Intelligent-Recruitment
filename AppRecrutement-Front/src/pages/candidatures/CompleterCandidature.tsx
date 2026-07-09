@@ -4,10 +4,10 @@ import { Briefcase, ArrowLeft, Send } from 'lucide-react';
 import api from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
 
-export default function PostulerOffre() {
-  const { id } = useParams<{ id: string }>();
+export default function CompleterCandidature() {
+  const { candidatureId } = useParams<{ candidatureId: string }>();
   const navigate = useNavigate();
-  const [offre, setOffre] = useState<any>(null);
+  const [candidature, setCandidature] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     lettreMotivation: ''
@@ -15,64 +15,37 @@ export default function PostulerOffre() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchOffre = async () => {
+    const fetchCandidature = async () => {
       try {
-        console.log('Fetching offre with ID:', id);
-        const response = await api.get(`/offres/${id}/with-quiz`);
-        console.log('Offre response:', response.data);
-        setOffre(response.data);
+        const response = await api.get(`/candidatures/${candidatureId}`);
+        setCandidature(response.data);
+        // Pré-remplir la lettre de motivation si elle existe déjà
+        if (response.data.lettreMotivation) {
+          setFormData({ lettreMotivation: response.data.lettreMotivation });
+        }
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching offre:', err);
-        setError('Erreur lors du chargement de l\'offre');
+        setError('Erreur lors du chargement de la candidature');
         setLoading(false);
       }
     };
 
-    fetchOffre();
-  }, [id]);
-
-  // Rediriger directement vers le quiz si l'offre en a un
-  useEffect(() => {
-    console.log('Checking offre for quiz:', offre);
-    console.log('All offre properties:', offre ? Object.keys(offre) : 'offre is null');
-    console.log('offre.quiz value:', offre ? offre.quiz : 'offre is null');
-    if (offre && offre.quiz) {
-      console.log('Quiz détecté, redirection vers le quiz');
-      console.log('Quiz ID:', offre.quiz.id);
-      const targetUrl = `/dashboard/candidat/quiz/${offre.quiz.id}/offre/${id}`;
-      console.log('Target URL:', targetUrl);
-      navigate(targetUrl);
-    } else {
-      console.log('Pas de quiz détecté ou offre non chargée');
-    }
-  }, [offre, id, navigate]);
-
+    fetchCandidature();
+  }, [candidatureId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     try {
-      const response = await api.post('/candidatures', {
-        offreId: id,
+      await api.put(`/candidatures/${candidatureId}`, {
         lettreMotivation: formData.lettreMotivation
       });
-      console.log('Candidature créée:', response.data);
-      console.log('Offre:', offre);
-      console.log('Offre.quiz:', offre?.quiz);
-      
-      // Vérifier si l'offre a un quiz
-      if (offre?.quiz) {
-        console.log('Redirection vers le quiz:', offre.quiz.id);
-        navigate(`/dashboard/candidat/quiz/${offre.quiz.id}/candidature/${response.data.id}`);
-      } else {
-        console.log('Pas de quiz, redirection vers les candidatures');
-        navigate('/dashboard/candidat/candidatures');
-      }
+      console.log('Candidature complétée avec succès');
+      navigate('/dashboard/candidat/candidatures');
     } catch (err) {
-      setError('Erreur lors de la candidature');
-      console.error('Error creating candidature:', err);
+      setError('Erreur lors de la mise à jour de la candidature');
+      console.error('Error updating candidature:', err);
     }
   };
 
@@ -90,7 +63,7 @@ export default function PostulerOffre() {
     );
   }
 
-  if (error && !offre) {
+  if (error && !candidature) {
     return (
       <MainLayout role="CANDIDAT" userName="Candidat">
         <div className="flex items-center justify-center h-64">
@@ -104,11 +77,11 @@ export default function PostulerOffre() {
     <MainLayout role="CANDIDAT" userName="Candidat">
       <div className="mb-8">
         <Link
-          to="/dashboard/candidat/offres"
+          to="/dashboard/candidat/candidatures"
           className="text-[#3B82F6] hover:text-[#2563EB] font-medium inline-flex items-center gap-2"
         >
           <ArrowLeft className="w-5 h-5" />
-          Retour aux offres
+          Retour aux candidatures
         </Link>
       </div>
 
@@ -118,15 +91,15 @@ export default function PostulerOffre() {
             <Briefcase className="w-8 h-8 text-[#3B82F6]" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-[#1E293B]">Postuler à l'offre</h1>
-            <p className="text-gray-600 mt-1">Envoyez votre candidature</p>
+            <h1 className="text-3xl font-bold text-[#1E293B]">Compléter votre candidature</h1>
+            <p className="text-gray-600 mt-1">Ajoutez votre lettre de motivation</p>
           </div>
         </div>
 
-        {offre && (
+        {candidature && candidature.offre && (
           <div className="mb-8 p-6 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0]">
-            <h2 className="text-2xl font-bold text-[#1E293B] mb-2">{offre.titre}</h2>
-            <p className="text-gray-600 text-lg">{offre.typeContrat} • {offre.salaire} • {offre.lieu}</p>
+            <h2 className="text-2xl font-bold text-[#1E293B] mb-2">{candidature.offre.titre}</h2>
+            <p className="text-gray-600 text-lg">{candidature.offre.typeOffre} • {candidature.offre.salaire} • {candidature.offre.lieu}</p>
           </div>
         )}
 
@@ -155,7 +128,7 @@ export default function PostulerOffre() {
 
           <div className="flex justify-end gap-4 pt-6">
             <Link
-              to="/dashboard/candidat/offres"
+              to="/dashboard/candidat/candidatures"
               className="px-6 py-3 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors font-medium"
             >
               Annuler

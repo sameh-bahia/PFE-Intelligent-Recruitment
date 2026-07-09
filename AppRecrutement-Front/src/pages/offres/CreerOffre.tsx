@@ -1,8 +1,19 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Briefcase, ArrowLeft, Save } from 'lucide-react';
+import { Briefcase, ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
 import api from '@/lib/api';
 import MainLayout from '@/components/layout/MainLayout';
+
+interface Question {
+  enonce: string;
+  points: number;
+  options: Option[];
+}
+
+interface Option {
+  texte: string;
+  isCorrect: boolean;
+}
 
 export default function CreerOffre() {
   const [formData, setFormData] = useState({
@@ -15,17 +26,64 @@ export default function CreerOffre() {
     lieu: '',
     competences: ''
   });
+  const [creerQuiz, setCreerQuiz] = useState(false);
+  const [quizData, setQuizData] = useState({
+    titre: '',
+    dureeMinutes: 15
+  });
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const addQuestion = () => {
+    setQuestions([...questions, { enonce: '', points: 1, options: [{ texte: '', isCorrect: false }, { texte: '', isCorrect: false }, { texte: '', isCorrect: false }, { texte: '', isCorrect: false }] }]);
+  };
+
+  const removeQuestion = (index: number) => {
+    setQuestions(questions.filter((_, i) => i !== index));
+  };
+
+  const updateQuestion = (index: number, field: keyof Question, value: string | number) => {
+    const updated = [...questions];
+    updated[index][field] = value as never;
+    setQuestions(updated);
+  };
+
+  const updateOption = (questionIndex: number, optionIndex: number, field: keyof Option, value: string | boolean) => {
+    const updated = [...questions];
+    updated[questionIndex].options[optionIndex][field] = value as never;
+    setQuestions(updated);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     try {
-      const response = await api.post('/offres', formData);
-      console.log('Offre créée:', response.data);
-      navigate('/dashboard/recruteur/offres');
+      if (creerQuiz) {
+        // Créer l'offre avec le quiz complet en une seule requête
+        const payload = {
+          ...formData,
+          competences: formData.competences.split(',').map(c => c.trim()).filter(c => c),
+          quiz: {
+            titre: quizData.titre || 'Quiz Technique',
+            dureeMinutes: quizData.dureeMinutes,
+            questions: questions
+          }
+        };
+        const response = await api.post('/offres/with-quiz', payload);
+        console.log('Offre créée avec quiz:', response.data);
+        navigate('/dashboard/recruteur/offres');
+      } else {
+        // Créer l'offre sans quiz
+        const payload = {
+          ...formData,
+          competences: formData.competences.split(',').map(c => c.trim()).filter(c => c)
+        };
+        const response = await api.post('/offres', payload);
+        console.log('Offre créée:', response.data);
+        navigate('/dashboard/recruteur/offres');
+      }
     } catch (err) {
       setError('Erreur lors de la création de l\'offre');
       console.error('Error creating offre:', err);
@@ -212,6 +270,133 @@ export default function CreerOffre() {
               Séparez les compétences par des virgules
             </p>
           </div>
+
+          <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-xl border border-blue-200">
+            <input
+              type="checkbox"
+              id="creerQuiz"
+              checked={creerQuiz}
+              onChange={(e) => setCreerQuiz(e.target.checked)}
+              className="w-5 h-5 text-[#3B82F6] rounded focus:ring-[#3B82F6]"
+            />
+            <label htmlFor="creerQuiz" className="text-gray-700">
+              <span className="font-semibold">Ajouter un quiz technique</span>
+              <span className="text-gray-500 text-sm ml-2">- Les candidats devront passer un quiz avant de postuler</span>
+            </label>
+          </div>
+
+          {creerQuiz && (
+            <div className="space-y-6 p-6 bg-gray-50 rounded-xl border border-gray-200">
+              <h3 className="text-xl font-bold text-[#1E293B]">Configuration du Quiz</h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="quizTitre" className="block text-sm font-semibold text-[#1E293B] mb-2">
+                    Titre du quiz
+                  </label>
+                  <input
+                    id="quizTitre"
+                    type="text"
+                    value={quizData.titre}
+                    onChange={(e) => setQuizData({ ...quizData, titre: e.target.value })}
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all"
+                    placeholder="Quiz Technique"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="quizDuree" className="block text-sm font-semibold text-[#1E293B] mb-2">
+                    Durée (minutes)
+                  </label>
+                  <input
+                    id="quizDuree"
+                    type="number"
+                    value={quizData.dureeMinutes}
+                    onChange={(e) => setQuizData({ ...quizData, dureeMinutes: parseInt(e.target.value) || 15 })}
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all"
+                    min="1"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-lg font-semibold text-[#1E293B]">Questions</h4>
+                  <button
+                    type="button"
+                    onClick={addQuestion}
+                    className="flex items-center gap-2 px-4 py-2 bg-[#3B82F6] text-white rounded-lg hover:bg-[#2563EB] transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Ajouter une question
+                  </button>
+                </div>
+
+                {questions.map((question, qIndex) => (
+                  <div key={qIndex} className="p-4 bg-white rounded-xl border border-gray-200 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-[#1E293B]">Question {qIndex + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeQuestion(qIndex)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-[#1E293B] mb-2">
+                        Énoncé de la question
+                      </label>
+                      <textarea
+                        value={question.enonce}
+                        onChange={(e) => updateQuestion(qIndex, 'enonce', e.target.value)}
+                        rows={2}
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all"
+                        placeholder="Entrez votre question..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-[#1E293B] mb-2">
+                        Points
+                      </label>
+                      <input
+                        type="number"
+                        value={question.points}
+                        onChange={(e) => updateQuestion(qIndex, 'points', parseInt(e.target.value) || 1)}
+                        className="w-24 px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all"
+                        min="1"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-semibold text-[#1E293B] mb-2">
+                        Options de réponse
+                      </label>
+                      {question.options.map((option, oIndex) => (
+                        <div key={oIndex} className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={option.isCorrect}
+                            onChange={(e) => updateOption(qIndex, oIndex, 'isCorrect', e.target.checked)}
+                            className="w-5 h-5 text-[#3B82F6] rounded focus:ring-[#3B82F6]"
+                          />
+                          <input
+                            type="text"
+                            value={option.texte}
+                            onChange={(e) => updateOption(qIndex, oIndex, 'texte', e.target.value)}
+                            className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition-all"
+                            placeholder={`Option ${oIndex + 1}`}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-end gap-4 pt-6">
             <Link
